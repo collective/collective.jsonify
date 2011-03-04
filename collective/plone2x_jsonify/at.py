@@ -1,8 +1,7 @@
 
 import base64
+from collective.plone2x_jsonify.base import ZopeBaseWrapper
 
-from base_wrapper import ZopeBaseWrapper
-from Products.Archetypes.interfaces import IReferenceable
 
 class ArchetypesWrapper(ZopeBaseWrapper):
     """
@@ -37,7 +36,7 @@ class ArchetypesWrapper(ZopeBaseWrapper):
                         raise Exception('problems with %s: %s' % (self.obj.absolute_url(), str(e)))
                 if value:
                     try:
-                    	ct = field.getContentType(obj)
+                        ct = field.getContentType(obj)
                     except AttributeError:
                         ct = ''
                     self[unicode(fieldname)] = value
@@ -84,6 +83,7 @@ class ArchetypesWrapper(ZopeBaseWrapper):
                                 '%s in %s' % (fieldname, obj.absolute_url()))
 
             # AT references
+            from Products.Archetypes.interfaces import IReferenceable
             if IReferenceable.providedBy(obj):
                 self['_atrefs'] = {}
                 self['_atbrefs'] = {}
@@ -99,7 +99,3 @@ class ArchetypesWrapper(ZopeBaseWrapper):
                     brefs = obj.getBRefs(relationship=brel)
                     for bref in brefs:
                         self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
-                    
-                    
-                    
-

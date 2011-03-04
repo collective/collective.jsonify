@@ -5,7 +5,7 @@ from Products.CMFCore.utils import getToolByName
 from Products.CMFPlone.CatalogTool import getObjPositionInParent
 
 
-class ZopeBaseWrapper(dict):
+class BaseWrapper(dict):
     """PropertyManager properties, format and default view,
        access control, workflow history,
        and pass it as tranmogrifier friendly style
@@ -135,12 +135,12 @@ class ZopeBaseWrapper(dict):
         return s.decode(test_encodings[0], 'ignore')
 
 
-class BaseWrapper(ZopeBaseWrapper):
+class DCWrapper(BaseWrapper):
     """Wraps (CMF) dublin core metadata
     """
 
     def __init__(self, obj):
-        super(BaseWrapper, self).__init__(obj)
+        super(DCWrapper, self).__init__(obj)
 
         # Dublin Core
         self['id'] = self.obj.getId()
@@ -149,27 +149,24 @@ class BaseWrapper(ZopeBaseWrapper):
             if val:
                 self[field] = val.decode(self.charset, 'ignore')
         # for DC attrs that are tuples
-        for attr in ('subject', 'contributors'):
-            self[attr] = []
-            val_tuple = getattr(self.obj, attr, False)
+        for field in ('subject', 'contributors'):
+            self[field] = []
+            val_tuple = getattr(self.obj, field, False)
             if val_tuple:
                 for val in val_tuple:
-                    self[attr].append(val.decode(self.charset, 'ignore'))
-                self[attr] = tuple(self[attr])
+                    self[field].append(val.decode(self.charset, 'ignore'))
+                self[field] = tuple(self[field])
         # for DC attrs that are DateTimes
-        datetimes_dict = {'creation_date': 'creation_date',
-                          'modification_date': 'modification_date',
-                          'expiration_date': 'expirationDate',
-                          'effective_date': 'effectiveDate',
-                          'expirationDate': 'expirationDate',
-                          'effectiveDate': 'effectiveDate'}
-        for old_name, new_name in datetimes_dict.items():
-            val = getattr(self.obj, old_name, False)
+        for field in ['creation_date', 'modification_date', 'expiration_date',
+                      'effective_date', 'expirationDate', 'effectiveDate']:
+            val = getattr(self.obj, field, False)
             if val:
-                self[new_name] = str(val)
+                self[field] = str(val)
 
 
-class ZopeObjectWrapper(ZopeBaseWrapper):
+class ZopeObjectWrapper(BaseWrapper):
+    """ Wrapper for "zope objects": DTMLMethod, ZopePageTemplate
+    """
 
     def __init__(self, obj):
         super(ZopeObjectWrapper, self).__init__(obj)

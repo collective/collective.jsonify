@@ -1,22 +1,18 @@
-"""
-These wrappers get the data in a format that can be used by
-the atschemaupdater blueprint from plone.app.transmogrifier
-and the atdatafield bluprint from this same package.
-"""
 
 import base64
 
-from base_wrapper import BaseWrapper
+from collective.plone2x_jsonify.base import BaseWrapper
+from collective.plone2x_jsonify.base import DCWrapper
 
 
-class DocumentWrapper(BaseWrapper):
+class DocumentWrapper(DCWrapper):
 
     def __init__(self, obj):
         super(DocumentWrapper, self).__init__(obj)
         self['text'] = self.obj.text.decode(self.charset, 'ignore')
 
 
-class LinkWrapper(BaseWrapper):
+class LinkWrapper(DCWrapper):
 
     def __init__(self, obj):
         super(LinkWrapper, self).__init__(obj)
@@ -51,7 +47,7 @@ class SortCriteriaWrapper(BaseWrapper):
 
     def __init__(self, obj):
         super(SortCriteriaWrapper, self).__init__(obj)
-        self['index'] = elf.bj.index
+        self['index'] = self.obj.index
         self['reversed'] = self.obj.reversed
 
 
@@ -65,21 +61,21 @@ class DateCriteriaWrapper(BaseWrapper):
         self['daterange'] = self.obj.daterange
 
 
-class FileWrapper(BaseWrapper):
+class FileWrapper(DCWrapper):
 
     def __init__(self, obj):
         super(FileWrapper, self).__init__(obj)
         self['_datafield_file'] = base64.b64encode(self.obj.data)
 
 
-class ImageWrapper(BaseWrapper):
+class ImageWrapper(DCWrapper):
 
     def __init__(self, obj):
         super(ImageWrapper, self).__init__(obj)
         self['_datafield_image'] = base64.b64encode(self.obj.data)
 
 
-class EventWrapper(BaseWrapper):
+class EventWrapper(DCWrapper):
 
     def __init__(self, obj):
         super(EventWrapper, self).__init__(self.obj)
@@ -90,5 +86,3 @@ class EventWrapper(BaseWrapper):
         self['contactEmail'] = self.obj.contact_email
         self['contactPhone'] = self.obj.contact_phone
         self['eventUrl'] = self.obj.event_url
-
-
