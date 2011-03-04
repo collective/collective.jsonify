@@ -1,0 +1,14 @@
+*.pyc
+*.pyo
+*.swp
+*.swo
+
+/.installed.cfg
+/bin/
+/collective.plone2x_jsonify.egg-info/
+/develop-eggs/
+/fake-eggs/
+/include/
+/lib/
+/parts/
+/var/
