@@ -1,9 +1,9 @@
 
 import base64
-from collective.plone2x_jsonify.base import ZopeBaseWrapper
+from collective.plone2x_jsonify.base import DCWrapper
 
 
-class ArchetypesWrapper(ZopeBaseWrapper):
+class ArchetypesWrapper(DCWrapper):
     """
     This gets data to be used with the
     atschemaupdater blueprint from plone.app.transmogrifier and

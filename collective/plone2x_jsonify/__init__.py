@@ -14,7 +14,7 @@ except:
 from collective.plone2x_jsonify import config
 from collective.plone2x_jsonify.base import BaseWrapper
 from collective.plone2x_jsonify.base import DCWrapper
-from collective.plone2x_jsonify.base import ZopeBaseWrapper
+from collective.plone2x_jsonify.base import ZopeObjectWrapper
 from collective.plone2x_jsonify.at import ArchetypesWrapper
 from collective.plone2x_jsonify.cmf import DocumentWrapper
 from collective.plone2x_jsonify.cmf import LinkWrapper
@@ -27,10 +27,11 @@ from collective.plone2x_jsonify.cmf import ImageWrapper
 from collective.plone2x_jsonify.cmf import EventWrapper
 
 
-def get_item(context):
+def get_item(self):
     """
     json representation of single object
     """
+    context = self
 
     try:
         wrapper = config.PORTALTYPE_WRAPPERS[aq_base(context).portal_type]
@@ -44,17 +45,17 @@ def get_item(context):
                 wrapper = BaseWrapper
 
     try:
-        obj_dict = wrapper(context)
+        context_dict = wrapper(context)
     except Exception, e:
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
         return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
 
     try:
-        JSON = simplejson.dumps(obj_dict)
+        JSON = simplejson.dumps(context_dict)
     except Exception, e:
         return 'ERROR: wrapped object is not serializable: %s' % str(e)
 
-    context.request.RESPONSE.setHeader('content-type', 'application/json')
+    #context.REQUEST.RESPONSE.setHeader('content-type', 'application/json')
     return JSON
 
 

@@ -1,6 +1,5 @@
 
 from Acquisition import aq_base
-from zope.annotation.interfaces import IAnnotations
 from Products.CMFCore.utils import getToolByName
 from Products.CMFPlone.CatalogTool import getObjPositionInParent
 
@@ -116,8 +115,9 @@ class BaseWrapper(dict):
 
         # annotations
         try:
+            from zope.annotation.interfaces import IAnnotations
             annotations = IAnnotations(obj)
-        except TypeError:
+        except ImportError, TypeError:
             pass
         else:
             for key in annotations:
