@@ -96,7 +96,7 @@ class Wrapper(dict):
         """ Format of object
             :keys: _format
         """
-        self['_content_type'] = self.context.Format()
+        self['_content_type'] = self._context.Format()
 
     def get_local_roles(self):
         """ Local roles of object
