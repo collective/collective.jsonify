@@ -13,8 +13,8 @@ class Wrapper(dict):
 
         self.context = aq_base(context)
         self._context = context
-        self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
-        self.portal_utils = getToolByName(self.context, 'plone_utils')
+        self.portal = getToolByName(self._context, 'portal_url').getPortalObject()
+        self.portal_utils = getToolByName(self._context, 'plone_utils')
         self.charset = self.portal.portal_properties.site_properties.default_charset
         if not self.charset: # newer seen it missing ... but users can change it
             self.charset = 'utf-8'
