@@ -12,6 +12,7 @@ class Wrapper(dict):
         from Products.CMFCore.utils import getToolByName
 
         self.context = aq_base(context)
+        self._context = context
         self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
         self.portal_utils = getToolByName(self.context, 'plone_utils')
         self.charset = self.portal.portal_properties.site_properties.default_charset
@@ -120,9 +121,9 @@ class Wrapper(dict):
             :keys: _permission_mapping
         """
         self['_permission_mapping'] = {}
-        if getattr(self.context, 'permission_settings', False):
-            roles = self.context.validRoles()
-            ps = self.context.permission_settings()
+        if getattr(self._context, 'permission_settings', False):
+            roles = self._context.validRoles()
+            ps = self._context.permission_settings()
             for perm in ps:
                 unchecked = 0
                 if not perm['acquire']:
@@ -146,9 +147,9 @@ class Wrapper(dict):
         try:
             try:
                 try:
-                    self['_owner'] = self.context.getWrappedOwner().getId()
+                    self['_owner'] = self._context.getWrappedOwner().getId()
                 except:
-                    self['_owner'] = self.context.getOwner(info = 1).getId()
+                    self['_owner'] = self._context.getOwner(info = 1).getId()
             except:
                 self['_owner'] = self.context.getOwner(info = 1)[1]
         except:
