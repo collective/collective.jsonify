@@ -5,8 +5,9 @@
 
 /.installed.cfg
 /bin/
-/collective.plone2x_jsonify.egg-info/
+/collective.jsonify.egg-info/
 /develop-eggs/
+/docs/_build/
 /fake-eggs/
 /include/
 /lib/

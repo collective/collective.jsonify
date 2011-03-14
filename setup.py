@@ -3,9 +3,9 @@ from setuptools import setup, find_packages
 version = '0.1'
 
 setup(
-    name='collective.plone2x_jsonify',
+    name='collective.jsonify',
     version=version,
-    description="provide json representation for content in Plone 2.0, 2.1 and 2.5",
+    description="provide json representation for content in Plone 2.0, 2.1, 2.5 and above",
     long_description=open("README.rst").read(),
     classifiers=[
         "Framework :: Plone",
@@ -14,9 +14,9 @@ setup(
     keywords='',
     author='',
     author_email='',
-    url='https://github.com/collective/collective.plone2x_jsonify',
+    url='https://github.com/collective/collective.jsonify',
     license='GPL',
-    packages=find_packages(exclude=['ez_setup']),
+    packages=find_packages(),
     namespace_packages=['collective'],
     include_package_data=True,
     zip_safe=False,
