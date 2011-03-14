@@ -12,8 +12,8 @@ class Wrapper(dict):
         from Products.CMFCore.utils import getToolByName
 
         self.context = aq_base(context)
-        self.portal = getToolByName(context, 'portal_url').getPortalObject()
-        self.portal_utils = getToolByName(context, 'plone_utils')
+        self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
+        self.portal_utils = getToolByName(self.context, 'plone_utils')
         self.charset = self.portal.portal_properties.site_properties.default_charset
         if not self.charset: # newer seen it missing ... but users can change it
             self.charset = 'utf-8'
@@ -142,14 +142,19 @@ class Wrapper(dict):
         """ Object owner
             :keys: _owner
         """
-        if getattr(self.context, 'getWrappedOwner', False):
-            self['_owner'] = (1, self.context.getWrappedOwner().getId())
-        else:
-            # fallback
-            # not very nice but at least it works
-            # trying to get/set the owner via getOwner(), changeOwnership(...)
-            # did not work, at least not with plone 1.x, at 1.0.1, zope 2.6.2
-            self['_owner'] = (0, self.context.getOwner(info = 1).getId())
+
+        try:
+            try:
+                try:
+                    self['_owner'] = self.context.getWrappedOwner().getId()
+                except:
+                    self['_owner'] = self.context.getOwner(info = 1).getId()
+            except:
+                self['_owner'] = self.context.getOwner(info = 1)[1]
+        except:
+            self['_owner'] = ''
+
+
 
     def get_workflowhistory(self):
         """ Workflow history
