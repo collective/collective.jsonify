@@ -170,8 +170,10 @@ class Wrapper(dict):
             workflow_history = self.context.workflow_history.data
             for w in workflow_history:
                 for i, w2 in enumerate(workflow_history[w]):
-                    workflow_history[w][i]['time'] = str(workflow_history[w][i]['time'])
-                    workflow_history[w][i]['comments'] = self.decode(workflow_history[w][i]['comments'])
+                    if 'time' in workflow_history[w][i].keys():
+                        workflow_history[w][i]['time'] = str(workflow_history[w][i]['time'])
+                    if 'comments' in workflow_history[w][i].keys():
+                        workflow_history[w][i]['comments'] = self.decode(workflow_history[w][i]['comments'])
             self['_workflow_history'] = workflow_history
 
     def get_position_in_parent(self):
