@@ -26,12 +26,14 @@ class Wrapper(dict):
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
         """ Sometimes we have to guess charset
         """
+        if type(s) is unicode:
+            return s
         if self.charset:
             test_encodings = (self.charset, ) + encodings
         for encoding in test_encodings:
             try:
                 return s.decode(encoding)
-            except UnicodeDecodeError:
+            except:
                 pass
         return s.decode(test_encodings[0], 'ignore')
 
@@ -63,6 +65,11 @@ class Wrapper(dict):
             Sometimes in old Plone sites we dont know exactly which type we are using
         """
         self['_classname'] = self.context.__class__.__name__
+
+    def get_uid(self):
+        """ Unique ID of object
+        """
+        self['_uid'] = self.context.UID()
 
     def get_properties(self):
         """ Object properties
