@@ -238,7 +238,7 @@ class Wrapper(dict):
             return
 
         import base64
-        fields = self.context.schema.fields()
+        fields = self._context.schema.fields()
         for field in fields:
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
@@ -249,9 +249,9 @@ class Wrapper(dict):
                     'TALESLines', 'ZPTField']:
 
                 try:
-                    value = field.getRaw(self.context)
+                    value = field.getRaw(self._context)
                 except AttributeError:
-                    value = field.get(self.context)
+                    value = field.get(self._context)
 
                 if callable(value) is True:
                     value = value()
@@ -275,13 +275,13 @@ class Wrapper(dict):
                     self[unicode('_content_type_')+fieldname] = ct
 
             elif type_ in ['DateTimeField']:
-                value = str(field.get(self.context))
+                value = str(field.get(self._context))
                 if value:
                     self[unicode(fieldname)] = value
 
             elif type_ in ['ImageField', 'FileField']:
                 fieldname = unicode('_datafield_'+fieldname)
-                value = field.get(self.context)
+                value = field.get(self._context)
                 value2 = value
 
                 if type(value) is not str:
@@ -308,7 +308,8 @@ class Wrapper(dict):
                     except Exception, e:
                         raise Exception('problems with %s: %s' %
                                 (self.context.absolute_url(), str(e)))
-                    ctype = field.getContentType(self.context)
+
+                    ctype = field.getContentType(self._context)
                     self[fieldname] = {
                         'data': value,
                         'size': size,
@@ -316,25 +317,27 @@ class Wrapper(dict):
                         'content_type': ctype}
 
             elif type_ in ['ReferenceField']:
-                import pdb; pdb.set_trace()
+                value = field.get(self._context)
+                if value:
+                    import pdb; pdb.set_trace()
 
                 # AT references
-                from Products.Archetypes.interfaces import IReferenceable
-                if IReferenceable.providedBy(obj):
-                    self['_atrefs'] = {}
-                    self['_atbrefs'] = {}
-                    relationships = obj.getRelationships()
-                    for rel in relationships:
-                        self['_atrefs'][rel] = []
-                        refs = obj.getRefs(relationship=rel)
-                        for ref in refs:
-                            self['_atrefs'][rel].append('/'.join(ref.getPhysicalPath()))
-                    brelationships = obj.getBRelationships()
-                    for brel in brelationships:
-                        self['_atbrefs'][brel] = []
-                        brefs = obj.getBRefs(relationship=brel)
-                        for bref in brefs:
-                            self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
+                #from Products.Archetypes.interfaces import IReferenceable
+                #if IReferenceable.providedBy(obj):
+                #    self['_atrefs'] = {}
+                #    self['_atbrefs'] = {}
+                #    relationships = obj.getRelationships()
+                #    for rel in relationships:
+                #        self['_atrefs'][rel] = []
+                #        refs = obj.getRefs(relationship=rel)
+                #        for ref in refs:
+                #            self['_atrefs'][rel].append('/'.join(ref.getPhysicalPath()))
+                #    brelationships = obj.getBRelationships()
+                #    for brel in brelationships:
+                #        self['_atbrefs'][brel] = []
+                #        brefs = obj.getBRefs(relationship=brel)
+                #        for bref in brefs:
+                #            self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
 
             elif type_ in ['ComputedField']:
                 continue
