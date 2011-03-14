@@ -238,7 +238,7 @@ class Wrapper(dict):
             return
 
         import base64
-        fields = self.obj.schema.fields()
+        fields = self.context.schema.fields()
         for field in fields:
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
