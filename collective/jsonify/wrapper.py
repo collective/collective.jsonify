@@ -166,9 +166,7 @@ class Wrapper(dict):
                 lalala
         """
         self['_workflow_history'] = {}
-        if getattr(self.context, 'workflow_history', False):
-            import ipdb; ipdb.set_trace()
-            # TODO: we need to see what default value should be
+        if getattr(self._context, 'workflow_history', False):
             workflow_history = self.context.workflow_history.data
             for w in workflow_history:
                 for i, w2 in enumerate(workflow_history[w]):
