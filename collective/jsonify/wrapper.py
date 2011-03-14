@@ -11,10 +11,10 @@ class Wrapper(dict):
         from Acquisition import aq_base
         from Products.CMFCore.utils import getToolByName
 
-        self.context = aq_base(context)
-        self._context = context
-        self.portal = getToolByName(self._context, 'portal_url').getPortalObject()
-        self.portal_utils = getToolByName(self._context, 'plone_utils')
+        self.context = context
+        self._context = aq_base(context)
+        self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
+        self.portal_utils = getToolByName(self.context, 'plone_utils')
         self.charset = self.portal.portal_properties.site_properties.default_charset
         if not self.charset: # newer seen it missing ... but users can change it
             self.charset = 'utf-8'
@@ -96,7 +96,7 @@ class Wrapper(dict):
         """ Format of object
             :keys: _format
         """
-        self['_content_type'] = self._context.Format()
+        self['_content_type'] = self.context.Format()
 
     def get_local_roles(self):
         """ Local roles of object
@@ -121,9 +121,9 @@ class Wrapper(dict):
             :keys: _permission_mapping
         """
         self['_permission_mapping'] = {}
-        if getattr(self._context, 'permission_settings', False):
-            roles = self._context.validRoles()
-            ps = self._context.permission_settings()
+        if getattr(self.context, 'permission_settings', False):
+            roles = self.context.validRoles()
+            ps = self.context.permission_settings()
             for perm in ps:
                 unchecked = 0
                 if not perm['acquire']:
@@ -147,9 +147,9 @@ class Wrapper(dict):
         try:
             try:
                 try:
-                    self['_owner'] = self._context.getWrappedOwner().getId()
+                    self['_owner'] = self.context.getWrappedOwner().getId()
                 except:
-                    self['_owner'] = self._context.getOwner(info = 1).getId()
+                    self['_owner'] = self.context.getOwner(info = 1).getId()
             except:
                 self['_owner'] = self.context.getOwner(info = 1)[1]
         except:
@@ -166,7 +166,7 @@ class Wrapper(dict):
                 lalala
         """
         self['_workflow_history'] = {}
-        if getattr(self._context, 'workflow_history', False):
+        if getattr(self.context, 'workflow_history', False):
             workflow_history = self.context.workflow_history.data
             for w in workflow_history:
                 for i, w2 in enumerate(workflow_history[w]):
@@ -238,7 +238,7 @@ class Wrapper(dict):
             return
 
         import base64
-        fields = self._context.schema.fields()
+        fields = self.context.schema.fields()
         for field in fields:
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
@@ -249,9 +249,9 @@ class Wrapper(dict):
                     'TALESLines', 'ZPTField']:
 
                 try:
-                    value = field.getRaw(self._context)
+                    value = field.getRaw(self.context)
                 except AttributeError:
-                    value = field.get(self._context)
+                    value = field.get(self.context)
 
                 if callable(value) is True:
                     value = value()
@@ -275,13 +275,13 @@ class Wrapper(dict):
                     self[unicode('_content_type_')+fieldname] = ct
 
             elif type_ in ['DateTimeField']:
-                value = str(field.get(self._context))
+                value = str(field.get(self.context))
                 if value:
                     self[unicode(fieldname)] = value
 
             elif type_ in ['ImageField', 'FileField']:
                 fieldname = unicode('_datafield_'+fieldname)
-                value = field.get(self._context)
+                value = field.get(self.context)
                 value2 = value
 
                 if type(value) is not str:
@@ -309,7 +309,7 @@ class Wrapper(dict):
                         raise Exception('problems with %s: %s' %
                                 (self.context.absolute_url(), str(e)))
 
-                    ctype = field.getContentType(self._context)
+                    ctype = field.getContentType(self.context)
                     self[fieldname] = {
                         'data': value,
                         'size': size,
@@ -317,7 +317,7 @@ class Wrapper(dict):
                         'content_type': ctype}
 
             elif type_ in ['ReferenceField']:
-                value = field.get(self._context)
+                value = field.get(self.context)
                 if value:
                     import pdb; pdb.set_trace()
 
