@@ -51,9 +51,9 @@ class Wrapper(dict):
             :keys: _type
         """
         try:
-            self['_portal_type'] = self.context.portal_type
+            self['_type'] = self.context.portal_type
         except AttributeError:
-            self['_portal_type'] = ''
+            self['_type'] = ''
 
     def get_classname(self):
         """ Classname of object.
