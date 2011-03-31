@@ -14,6 +14,7 @@ class Wrapper(dict):
         self.context = context
         self._context = aq_base(context)
         self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
+        self.portal_path = '/'.join(self.portal.getPhysicalPath())
         self.portal_utils = getToolByName(self.context, 'plone_utils')
         self.charset = self.portal.portal_properties.site_properties.default_charset
         if not self.charset: # newer seen it missing ... but users can change it
@@ -353,3 +354,10 @@ class Wrapper(dict):
                 raise TypeError('Unknown field type for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
 
+    def get_translation(self):
+        """Get LinguaPlone translation linking information."""
+        if not hasattr(self._context, 'getCanonical'):
+            return
+        self['_translationOf'] = '/'.join(self.context.getCanonical(
+                                 ).getPhysicalPath())[len(self.portal_path):]
+        self['_canonicalTranslation'] = self.context.isCanonical()
