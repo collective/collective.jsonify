@@ -294,7 +294,7 @@ class Wrapper(dict):
                 if value:
                     self[unicode(fieldname)] = value
 
-            elif type_ in ['ImageField', 'FileField']:
+            elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
                 fieldname = unicode('_datafield_'+fieldname)
                 value = field.get(self.context)
                 value2 = value
