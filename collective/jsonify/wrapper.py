@@ -310,7 +310,7 @@ class Wrapper(dict):
                     size = value2.getSize()
                     fname = field.getFilename(self.context)
                     try:
-                        fname = fname.decode(self.charset, 'ignore')
+                        fname = self.decode(fname)
                     except AttributeError:
                         # maybe an int?
                         fname = unicode(fname)
