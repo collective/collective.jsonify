@@ -70,7 +70,8 @@ class Wrapper(dict):
     def get_uid(self):
         """ Unique ID of object
         """
-        self['_uid'] = self.context.UID()
+        if hasattr(self._context, 'UID'):
+            self['_uid'] = self.context.UID()
 
     def get_properties(self):
         """ Object properties
