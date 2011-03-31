@@ -255,7 +255,7 @@ class Wrapper(dict):
             if type_ in ['StringField', 'BooleanField', 'LinesField',
                     'IntegerField', 'TextField', 'SimpleDataGridField',
                     'FloatField', 'FixedPointField', 'TALESString',
-                    'TALESLines', 'ZPTField']:
+                    'TALESLines', 'ZPTField', 'DataGridField']:
 
                 try:
                     value = field.getRaw(self.context)
@@ -274,6 +274,12 @@ class Wrapper(dict):
                     except Exception, e:
                         raise Exception('problems with %s: %s' %
                                 (self.context.absolute_url(), str(e)))
+                elif value and type_ == 'DataGridField':
+                     for i, row in enumerate(value):
+                         for col_key in row.keys():
+                             col_value = row[col_key]
+                             if type(col_value) in (unicode, str):
+                                 value[i][col_key] = self.decode(col_value)
 
                 if value:
                     try:
