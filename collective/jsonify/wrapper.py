@@ -267,7 +267,7 @@ class Wrapper(dict):
 
                 if value and type_ in ['StringField', 'TextField']:
                     try:
-                        value = value.decode(self.charset)
+                        value = self.decode(value)
                     except AttributeError:
                         # maybe an int?
                         value = unicode(value)
