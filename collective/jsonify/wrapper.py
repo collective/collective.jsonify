@@ -255,7 +255,7 @@ class Wrapper(dict):
             if type_ in ['StringField', 'BooleanField', 'LinesField',
                     'IntegerField', 'TextField', 'SimpleDataGridField',
                     'FloatField', 'FixedPointField', 'TALESString',
-                    'TALESLines', 'ZPTField', 'DataGridField']:
+                    'TALESLines', 'ZPTField', 'DataGridField', 'EmailField']:
 
                 try:
                     value = field.getRaw(self.context)
