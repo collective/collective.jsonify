@@ -32,4 +32,8 @@ def get_children(self):
     children = []
     if getattr(aq_base(self), 'objectIds', False):
         children = self.objectIds()
+        # Btree based folders return an OOBTreeItems object which is not serializable
+        # Thus we need to convert it to a list
+        if not isinstance(children, list):
+            children = [item for item in children]
     return simplejson.dumps(children)
