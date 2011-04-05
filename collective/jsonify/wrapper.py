@@ -164,8 +164,6 @@ class Wrapper(dict):
         except:
             self['_owner'] = ''
 
-
-
     def get_workflowhistory(self):
         """ Workflow history
             :keys: _workflow_history
@@ -191,7 +189,6 @@ class Wrapper(dict):
         """
         from Products.CMFPlone.CatalogTool import getObjPositionInParent
         self['_gopip'] = getObjPositionInParent(self.context)
-
 
     def get_id(self):
         """ Object id
@@ -332,27 +329,7 @@ class Wrapper(dict):
                         'content_type': ctype}
 
             elif type_ in ['ReferenceField']:
-                value = field.get(self.context)
-                if value:
-                    import pdb; pdb.set_trace()
-
-                # AT references
-                #from Products.Archetypes.interfaces import IReferenceable
-                #if IReferenceable.providedBy(obj):
-                #    self['_atrefs'] = {}
-                #    self['_atbrefs'] = {}
-                #    relationships = obj.getRelationships()
-                #    for rel in relationships:
-                #        self['_atrefs'][rel] = []
-                #        refs = obj.getRefs(relationship=rel)
-                #        for ref in refs:
-                #            self['_atrefs'][rel].append('/'.join(ref.getPhysicalPath()))
-                #    brelationships = obj.getBRelationships()
-                #    for brel in brelationships:
-                #        self['_atbrefs'][brel] = []
-                #        brefs = obj.getBRefs(relationship=brel)
-                #        for bref in brefs:
-                #            self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
+                pass
 
             elif type_ in ['ComputedField']:
                 continue
@@ -361,8 +338,34 @@ class Wrapper(dict):
                 raise TypeError('Unknown field type for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
 
+    def get_references(self):
+        """ AT references
+        """
+        try:
+            from Products.Archetypes.interfaces import IReferenceable
+            if not IReferenceable.providedBy(self.context):
+                return
+        except:
+            return
+
+        self['_atrefs'] = {}
+        self['_atbrefs'] = {}
+        relationships = self.context.getRelationships()
+        for rel in relationships:
+            self['_atrefs'][rel] = []
+            refs = self.context.getRefs(relationship=rel)
+            for ref in refs:
+                self['_atrefs'][rel].append('/'.join(ref.getPhysicalPath()))
+        brelationships = self.context.getBRelationships()
+        for brel in brelationships:
+            self['_atbrefs'][brel] = []
+            brefs = self.context.getBRefs(relationship=brel)
+            for bref in brefs:
+                self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
+
     def get_translation(self):
-        """Get LinguaPlone translation linking information."""
+        """ Get LinguaPlone translation linking information.
+        """
         if not hasattr(self._context, 'getCanonical'):
             return
         self['_translationOf'] = '/'.join(self.context.getCanonical(
