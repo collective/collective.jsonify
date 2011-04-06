@@ -51,24 +51,34 @@ class Wrapper(dict):
 
     def get_type(self):
         """ Portal type of object
-            :keys: _type
+
+            Example::
+                {'_type': 'Document'}
         """
         try:
             self['_type'] = self.context.portal_type
         except AttributeError:
-            self['_type'] = ''
+            pass
 
     def get_classname(self):
         """ Classname of object.
 
-            :keys: _classname
+            Sometimes in old Plone sites we dont know exactly which type we are
+            using.
 
-            Sometimes in old Plone sites we dont know exactly which type we are using
+            Example::
+
+                {'_classname': 'ATDocument'}
+
         """
         self['_classname'] = self.context.__class__.__name__
 
     def get_uid(self):
         """ Unique ID of object
+
+            Example::
+
+                {'_uid': '12jk3h1kj23h123jkh13kj1k23jh1'}
         """
         if hasattr(self._context, 'UID'):
             self['_uid'] = self.context.UID()
@@ -127,9 +137,9 @@ class Wrapper(dict):
 
     def get_permissions(self):
         """ Permission of object (Security tab in ZMI)
-            :keys: _permission_mapping
+            :keys: _permissions
         """
-        self['_permission_mapping'] = {}
+        self['_permissions'] = {}
         if getattr(self.context, 'permission_settings', False):
             roles = self.context.validRoles()
             ps = self.context.permission_settings()
@@ -144,7 +154,7 @@ class Wrapper(dict):
                         role_name = roles[int(role['name'][role_idx:])]
                         new_roles.append(role_name)
                 if unchecked or new_roles:
-                    self['_permission_mapping'][perm['name']] = \
+                    self['_permissions'][perm['name']] = \
                          {'acquire': not unchecked,
                           'roles': new_roles}
 
@@ -162,7 +172,7 @@ class Wrapper(dict):
             except:
                 self['_owner'] = self.context.getOwner(info = 1)[1]
         except:
-            self['_owner'] = ''
+            pass
 
     def get_workflowhistory(self):
         """ Workflow history
