@@ -365,13 +365,15 @@ class Wrapper(dict):
             self['_atrefs'][rel] = []
             refs = self.context.getRefs(relationship=rel)
             for ref in refs:
-                self['_atrefs'][rel].append('/'.join(ref.getPhysicalPath()))
+                if ref is not None:
+                    self['_atrefs'][rel].append('/'.join(ref.getPhysicalPath()))
         brelationships = self.context.getBRelationships()
         for brel in brelationships:
             self['_atbrefs'][brel] = []
             brefs = self.context.getBRefs(relationship=brel)
             for bref in brefs:
-                self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
+                if bref is not None:
+                    self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
 
     def get_translation(self):
         """ Get LinguaPlone translation linking information.
