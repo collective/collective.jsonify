@@ -3,21 +3,39 @@ import sys
 import pprint
 import traceback
 import simplejson
-from collective.jsonify.wrapper import Wrapper
+from collective.jsonify.wrapper import Wrapper, WrapperWithoutFile
 
 
 def get_item(self):
     """
     """
-
     try:
-        context_dict = Wrapper(self)
+        context_dict = WrapperWithoutFile(self)
+    except Exception, e:
+        tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
+        return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
+
+    for key in context_dict.keys():
+        if key.startswith('_datafield_'):
+            context_dict.pop(key)
+    
+    try:
+        JSON = simplejson.dumps(context_dict)
+    except Exception, e:
+        return 'ERROR: wrapped object is not serializable: %s' % str(e)
+
+    return JSON
+
+def get_item_with_file(self):
+    try:
+	context_dict = Wrapper(self)
     except Exception, e:
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
         return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
 
     try:
-        JSON = simplejson.dumps(context_dict)
+	JSON = simplejson.dumps(context_dict)
+
     except Exception, e:
         return 'ERROR: wrapped object is not serializable: %s' % str(e)
 

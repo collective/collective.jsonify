@@ -1,5 +1,5 @@
-
-
+from AccessControl import Unauthorized
+import logging
 
 class Wrapper(dict):
     """ Gets the data in a format that can be used by the
@@ -14,6 +14,7 @@ class Wrapper(dict):
         self.context = context
         self._context = aq_base(context)
         self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
+        self.pr = self.portal.portal_repository
         self.portal_path = '/'.join(self.portal.getPhysicalPath())
         self.portal_utils = getToolByName(self.context, 'plone_utils')
         self.charset = self.portal.portal_properties.site_properties.default_charset
@@ -303,42 +304,92 @@ class Wrapper(dict):
 
             elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
                 fieldname = unicode('_datafield_'+fieldname)
-                value = field.get(self.context)
-                value2 = value
 
-                if type(value) is not str:
-                    if type(value.data) is str:
-                        value = base64.b64encode(value.data)
-                    else:
-                        data = value.data
-                        value = ''
-                        while data is not None:
-                            value += data.data
-                            data = data.next
-                        value = base64.b64encode(value)
+                # check if there ar different versions
+		try:
+		    history = self.pr.getHistory(self.context)
+               	except Unauthorized, e:
+       		    history = []
+		    #logger = logging.getLogger('collective.jsonify')
+                    #logger.warn("Version Migration Doesn't work (Unauthorized) for object %s" % self.context)         
+		if len(history) > 1:
+                    vers_dict = []
+                    for version in history:
+                        value = field.get(version.object)
+                        value2 = value
 
-                # limit size of attachments to 20M
-                # TODO: this should be configurable
-                if value and len(value) < 20000000:
-                    size = value2.getSize()
-                    fname = field.getFilename(self.context)
-                    try:
-                        fname = self.decode(fname)
-                    except AttributeError:
-                        # maybe an int?
-                        fname = unicode(fname)
-                    except Exception, e:
-                        raise Exception('problems with %s: %s' %
-                                (self.context.absolute_url(), str(e)))
+                        if type(value) is not str:
+                            if type(value.data) is str:
+                                value = base64.b64encode(value.data)
+                            else:
+                                data = value.data
+                                value = ''
+                                while data is not None:
+                                    value += data.data
+                                    data = data.next
+                                value = base64.b64encode(value)
 
-                    ctype = field.getContentType(self.context)
-                    self[fieldname] = {
-                        'data': value,
-                        'size': size,
-                        'filename': fname or '',
-                        'content_type': ctype}
+                        # limit size of attachments to 20M
+                        # TODO: this should be configurable
+                        if value and len(value) < 2000000000:
+                            size = value2.getSize()
+                            fname = field.getFilename(version.object)
+                            try:
+                                fname = self.decode(fname)
+                            except AttributeError:
+                                # maybe an int?
+                                fname = unicode(fname)
+                            except Exception, e:
+                                raise Exception('problems with %s: %s' %
+                                        (self.context.absolute_url(), str(e)))
 
-            elif type_ in ['ReferenceField']:
+                            ctype = field.getContentType(self.context)
+                            vers_dict.append({
+                                'version_id': version.version_id,
+                                'version_comment': version.comment,
+                                'data': value,
+                                'size': size,
+                                'filename': fname or '',
+                                'content_type': ctype})
+                    self[fieldname] = vers_dict
+
+                else:
+                    value = field.get(self.context)
+                    value2 = value
+
+                    if type(value) is not str:
+                        if type(value.data) is str:
+                            value = base64.b64encode(value.data)
+                        else:
+                            data = value.data
+                            value = ''
+                            while data is not None:
+                                value += data.data
+                                data = data.next
+                            value = base64.b64encode(value)
+
+                    # limit size of attachments to 20M
+                    # TODO: this should be configurable
+                    if value and len(value) < 2000000000:
+                        size = value2.getSize()
+                        fname = field.getFilename(self.context)
+                        try:
+                            fname = self.decode(fname)
+                        except AttributeError:
+                            # maybe an int?
+                            fname = unicode(fname)
+                        except Exception, e:
+                            raise Exception('problems with %s: %s' %
+                                    (self.context.absolute_url(), str(e)))
+
+                        ctype = field.getContentType(self.context)
+                        self[fieldname] = {
+                            'data': value,
+                            'size': size,
+                            'filename': fname or '',
+                            'content_type': ctype}
+
+	    elif type_ in ['ReferenceField', 'ObjectTransitionField']:
                 pass
 
             elif type_ in ['ComputedField']:
@@ -383,3 +434,80 @@ class Wrapper(dict):
         self['_translationOf'] = '/'.join(self.context.getCanonical(
                                  ).getPhysicalPath())[len(self.portal_path):]
         self['_canonicalTranslation'] = self.context.isCanonical()
+
+
+class WrapperWithoutFile(Wrapper):
+    
+    def get_archetypes_fields(self):
+
+        """ If Archetypes is used then dump schema
+        """
+
+        try:
+            from Products.Archetypes.interfaces import IBaseObject
+            if not IBaseObject.providedBy(self.context):
+                return
+        except:
+            return
+
+        import base64
+        fields = self.context.schema.fields()
+        for field in fields:
+            fieldname = unicode(field.__name__)
+            type_ = field.__class__.__name__
+
+            if type_ in ['StringField', 'BooleanField', 'LinesField',
+                    'IntegerField', 'TextField', 'SimpleDataGridField',
+                    'FloatField', 'FixedPointField', 'TALESString',
+                    'TALESLines', 'ZPTField', 'DataGridField', 'EmailField']:
+
+                try:
+                    value = field.getRaw(self.context)
+                except AttributeError:
+                    value = field.get(self.context)
+
+                if callable(value) is True:
+                    value = value()
+
+                if value and type_ in ['StringField', 'TextField']:
+                    try:
+                        value = self.decode(value)
+                    except AttributeError:
+                        # maybe an int?
+                        value = unicode(value)
+                    except Exception, e:
+                        raise Exception('problems with %s: %s' %
+                                (self.context.absolute_url(), str(e)))
+                elif value and type_ == 'DataGridField':
+                     for i, row in enumerate(value):
+                         for col_key in row.keys():
+                             col_value = row[col_key]
+                             if type(col_value) in (unicode, str):
+                                 value[i][col_key] = self.decode(col_value)
+
+                if value:
+                    try:
+                        ct = field.getContentType(self.context)
+                    except AttributeError:
+                        ct = ''
+                    self[unicode(fieldname)] = value
+                    self[unicode('_content_type_')+fieldname] = ct
+
+            elif type_ in ['DateTimeField']:
+                value = str(field.get(self.context))
+                if value:
+                    self[unicode(fieldname)] = value
+
+            elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
+                fieldname = unicode('_datafield_'+fieldname)
+
+            elif type_ in ['ReferenceField', 'ObjectTransitionField']:
+                pass
+
+            elif type_ in ['ComputedField']:
+                continue
+
+            else:
+                raise TypeError('Unknown field type for ArchetypesWrapper in '
+                        '%s in %s' % (fieldname, self.context.absolute_url()))
+
