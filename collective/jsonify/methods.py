@@ -4,7 +4,7 @@ import pprint
 import traceback
 import simplejson
 from collective.jsonify.wrapper import Wrapper, WrapperWithoutFile
-
+from AccessControl.SecurityManagement import newSecurityManager
 
 def get_item(self):
     """
@@ -28,6 +28,11 @@ def get_item(self):
 
 def get_item_with_file(self):
     try:
+        #use newSecurityManager
+        newSecurityManager(
+           self.portal_url.getPortalObject(),
+    	   self.portal_url.getPortalObject().getOwner()
+        )
 	context_dict = Wrapper(self)
     except Exception, e:
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))

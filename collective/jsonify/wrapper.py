@@ -346,7 +346,7 @@ class Wrapper(dict):
                             ctype = field.getContentType(self.context)
                             vers_dict.append({
                                 'version_id': version.version_id,
-                                'version_sysmetadata': version.sysmetadata,
+                                'version_sysmetadata': version.sys_metadata,
                                 'data': value,
                                 'size': size,
                                 'filename': fname or '',
