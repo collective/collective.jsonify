@@ -288,13 +288,12 @@ class Wrapper(dict):
                              if type(col_value) in (unicode, str):
                                  value[i][col_key] = self.decode(col_value)
 
-                if value:
-                    try:
-                        ct = field.getContentType(self.context)
-                    except AttributeError:
-                        ct = ''
-                    self[unicode(fieldname)] = value
-                    self[unicode('_content_type_')+fieldname] = ct
+                try:
+                    ct = field.getContentType(self.context)
+                except AttributeError:
+                    ct = ''
+                self[unicode(fieldname)] = value
+                self[unicode('_content_type_')+fieldname] = ct
 
             elif type_ in ['DateTimeField']:
                 value = str(field.get(self.context))
