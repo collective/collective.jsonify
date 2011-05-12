@@ -1,4 +1,4 @@
-
+import os
 
 
 class Wrapper(dict):
@@ -316,9 +316,12 @@ class Wrapper(dict):
                             data = data.next
                         value = base64.b64encode(value)
 
-                # limit size of attachments to 20M
-                # TODO: this should be configurable
-                if value and len(value) < 20000000:
+                try:
+                    max_filesize = os.environ.get('JSONIFY_MAX_FILESIZE', 20000000)
+                except ValueError:
+                    max_filesize = 20000000
+
+                if value and len(value) < max_filesize:
                     size = value2.getSize()
                     fname = field.getFilename(self.context)
                     try:
