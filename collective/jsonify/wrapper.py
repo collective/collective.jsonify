@@ -312,7 +312,7 @@ class Wrapper(dict):
        		    history = []
 		    #logger = logging.getLogger('collective.jsonify')
                     #logger.warn("Version Migration Doesn't work (Unauthorized) for object %s" % self.context)         
-		if len(history) > 1:
+		if len(history) > 0:
                     vers_dict = []
                     for version in history:
                         value = field.get(version.object)
@@ -346,7 +346,7 @@ class Wrapper(dict):
                             ctype = field.getContentType(self.context)
                             vers_dict.append({
                                 'version_id': version.version_id,
-                                'version_comment': version.comment,
+                                'version_sysmetadata': version.sysmetadata,
                                 'data': value,
                                 'size': size,
                                 'filename': fname or '',
