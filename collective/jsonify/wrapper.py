@@ -317,7 +317,7 @@ class Wrapper(dict):
                         value = base64.b64encode(value)
 
                 try:
-                    max_filesize = os.environ.get('JSONIFY_MAX_FILESIZE', 20000000)
+                    max_filesize = int(os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
                 except ValueError:
                     max_filesize = 20000000
 
