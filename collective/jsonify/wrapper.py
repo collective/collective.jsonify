@@ -1,5 +1,4 @@
 from AccessControl import Unauthorized
-import logging
 
 class Wrapper(dict):
     """ Gets the data in a format that can be used by the
@@ -199,7 +198,11 @@ class Wrapper(dict):
             :keys: _gopip
         """
         from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        self['_gopip'] = getObjPositionInParent(self.context)
+        gopip = getObjPositionInParent(self.context)
+        if callable(gopip):
+            self['_gopip'] = gopip()
+        else:
+            self['_gopip'] = gopip
 
     def get_id(self):
         """ Object id
@@ -305,57 +308,9 @@ class Wrapper(dict):
             elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
                 fieldname = unicode('_datafield_'+fieldname)
 
-                # check if there ar different versions
-		try:
-		    history = self.pr.getHistory(self.context)
-               	except Unauthorized, e:
-       		    history = []
-		    #logger = logging.getLogger('collective.jsonify')
-                    #logger.warn("Version Migration Doesn't work (Unauthorized) for object %s" % self.context)         
-		if len(history) > 0:
-                    vers_dict = []
-                    for version in history:
-                        value = field.get(version.object)
-                        value2 = value
-
-                        if type(value) is not str:
-                            if type(value.data) is str:
-                                value = base64.b64encode(value.data)
-                            else:
-                                data = value.data
-                                value = ''
-                                while data is not None:
-                                    value += data.data
-                                    data = data.next
-                                value = base64.b64encode(value)
-
-                        # limit size of attachments to 20M
-                        # TODO: this should be configurable
-                        if value and len(value) < 2000000000:
-                            size = value2.getSize()
-                            fname = field.getFilename(version.object)
-                            try:
-                                fname = self.decode(fname)
-                            except AttributeError:
-                                # maybe an int?
-                                fname = unicode(fname)
-                            except Exception, e:
-                                raise Exception('problems with %s: %s' %
-                                        (self.context.absolute_url(), str(e)))
-
-                            ctype = field.getContentType(self.context)
-                            vers_dict.append({
-                                'version_id': version.version_id,
-                                'version_sysmetadata': version.sys_metadata,
-                                'data': value,
-                                'size': size,
-                                'filename': fname or '',
-                                'content_type': ctype})
-                    self[fieldname] = vers_dict
-
-                else:
-                    value = field.get(self.context)
-                    value2 = value
+                def get_file_data(obj):
+                    value = field.get(obj)
+                    size = value.getSize()
 
                     if type(value) is not str:
                         if type(value.data) is str:
@@ -367,29 +322,58 @@ class Wrapper(dict):
                                 value += data.data
                                 data = data.next
                             value = base64.b64encode(value)
+                    return value, size
 
-                    # limit size of attachments to 20M
-                    # TODO: this should be configurable
-                    if value and len(value) < 2000000000:
-                        size = value2.getSize()
-                        fname = field.getFilename(self.context)
-                        try:
-                            fname = self.decode(fname)
-                        except AttributeError:
-                            # maybe an int?
-                            fname = unicode(fname)
-                        except Exception, e:
-                            raise Exception('problems with %s: %s' %
-                                    (self.context.absolute_url(), str(e)))
+                # Check if there are multiple versions
+                try:
+                    history = self.pr.getHistory(self.context, oldestFirst=True)
+                except Unauthorized, e:
+                    history = []
 
-                        ctype = field.getContentType(self.context)
-                        self[fieldname] = {
+                if history:
+                    versions = []
+                    for version in history:
+                        value, size = get_file_data(version.object)
+                        fname = field.getFilename(version.object)
+                        ctype = field.getContentType(version.object)
+
+                        versions.append({
+                            'version_id': version.version_id,
+                            'version_sysmetadata': version.sys_metadata,
                             'data': value,
                             'size': size,
-                            'filename': fname or '',
-                            'content_type': ctype}
+                            'filename': fname,
+                            'content_type': ctype,
+                        })
 
-	    elif type_ in ['ReferenceField', 'ObjectTransitionField']:
+                    # Include working copy if it is not saved as a version 
+                    version_id = getattr(self.context, "version_id", None)
+                    if not self.pr.isUpToDate(self.context, version_id):
+                        value, size = get_file_data(self.context)
+                        fname = field.getFilename(self.context)
+                        ctype = field.getContentType(self.context)
+                        versions.append({
+                            'version_id': 'WORKING_COPY',
+                            'data': value,
+                            'size': size,
+                            'filename': fname,
+                            'content_type': ctype,
+                        })
+
+                    self[fieldname] = versions
+
+                else:
+                    value, size = get_file_data(self.context)
+                    fname = field.getFilename(self.context)
+                    ctype = field.getContentType(self.context)
+                    self[fieldname] = {
+                        'data': value,
+                        'size': size,
+                        'filename': fname,
+                        'content_type': ctype,
+                    }
+
+            elif type_ in ['ReferenceField', 'ObjectTransitionField']:
                 pass
 
             elif type_ in ['ComputedField']:
@@ -437,7 +421,7 @@ class Wrapper(dict):
 
 
 class WrapperWithoutFile(Wrapper):
-    
+
     def get_archetypes_fields(self):
 
         """ If Archetypes is used then dump schema
@@ -450,7 +434,6 @@ class WrapperWithoutFile(Wrapper):
         except:
             return
 
-        import base64
         fields = self.context.schema.fields()
         for field in fields:
             fieldname = unicode(field.__name__)
@@ -510,4 +493,5 @@ class WrapperWithoutFile(Wrapper):
             else:
                 raise TypeError('Unknown field type for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
+
 
