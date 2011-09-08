@@ -1,8 +1,9 @@
-
+import base64
 import sys
 import pprint
 import traceback
 import simplejson
+
 from collective.jsonify.wrapper import Wrapper
 
 
@@ -37,3 +38,17 @@ def get_children(self):
         if not isinstance(children, list):
             children = [item for item in children]
     return simplejson.dumps(children)
+
+def get_catalog_results(self):
+    """Returns a list of paths of all items found by the catalog.
+       Query parameters can be passed in the request.
+    """
+    if not hasattr(self.aq_base, 'unrestrictedSearchResults'):
+        return
+    query = self.REQUEST.form.get('catalog_query', None)
+    if query:
+        query = eval(base64.b64decode(query),
+                     {"__builtins__": None}, {})
+    item_paths = [item.getPath() for item 
+                  in self.unrestrictedSearchResults(**query) ]
+    return simplejson.dumps(item_paths)
