@@ -2,9 +2,13 @@ import base64
 import sys
 import pprint
 import traceback
-import simplejson
 
-from collective.jsonify.wrapper import Wrapper
+try:
+    import simplejson as json
+except:
+    import json
+
+from wrapper import Wrapper
 
 
 def get_item(self):
@@ -18,7 +22,7 @@ def get_item(self):
         return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
 
     try:
-        JSON = simplejson.dumps(context_dict)
+        JSON = json.dumps(context_dict)
     except Exception, e:
         return 'ERROR: wrapped object is not serializable: %s' % str(e)
 
@@ -37,7 +41,7 @@ def get_children(self):
         # Thus we need to convert it to a list
         if not isinstance(children, list):
             children = [item for item in children]
-    return simplejson.dumps(children)
+    return json.dumps(children)
 
 def get_catalog_results(self):
     """Returns a list of paths of all items found by the catalog.
@@ -51,4 +55,4 @@ def get_catalog_results(self):
                      {"__builtins__": None}, {})
     item_paths = [item.getPath() for item 
                   in self.unrestrictedSearchResults(**query) ]
-    return simplejson.dumps(item_paths)
+    return json.dumps(item_paths)
