@@ -127,6 +127,10 @@ class Wrapper(dict):
                 if key is not None:
                     self['_local_roles'][key] = val
 
+    def get_local_roles_block(self):
+        self['_local_roles_block'] = getattr(
+            self.context, '__ac_local_roles_block__', False)
+
     def get_userdefined_roles(self):
         """ User defined roles for object (via sharing UI)
             :keys: _userdefined_roles
@@ -346,7 +350,7 @@ class Wrapper(dict):
                             'content_type': ctype,
                         })
 
-                    # Include working copy if it is not saved as a version 
+                    # Include working copy if it is not saved as a version
                     version_id = getattr(self.context, "version_id", None)
                     if not self.pr.isUpToDate(self.context, version_id):
                         value, size = get_file_data(self.context)
@@ -493,5 +497,3 @@ class WrapperWithoutFile(Wrapper):
             else:
                 raise TypeError('Unknown field type for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
-
-
