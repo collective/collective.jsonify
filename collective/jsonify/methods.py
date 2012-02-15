@@ -31,15 +31,15 @@ def get_item_with_file(self):
         #use newSecurityManager
         newSecurityManager(
            self.portal_url.getPortalObject(),
-    	   self.portal_url.getPortalObject().getOwner()
-        )
-	context_dict = Wrapper(self)
+           self.portal_url.getPortalObject().getOwner()
+           )
+        context_dict = Wrapper(self)
     except Exception, e:
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
         return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
 
     try:
-	JSON = simplejson.dumps(context_dict)
+        JSON = simplejson.dumps(context_dict)
 
     except Exception, e:
         return 'ERROR: wrapped object is not serializable: %s' % str(e)
