@@ -1,4 +1,5 @@
 from AccessControl import Unauthorized
+import os
 
 class Wrapper(dict):
     """ Gets the data in a format that can be used by the
@@ -296,13 +297,12 @@ class Wrapper(dict):
                              if type(col_value) in (unicode, str):
                                  value[i][col_key] = self.decode(col_value)
 
-                if value:
-                    try:
-                        ct = field.getContentType(self.context)
-                    except AttributeError:
-                        ct = ''
-                    self[unicode(fieldname)] = value
-                    self[unicode('_content_type_')+fieldname] = ct
+                try:
+                    ct = field.getContentType(self.context)
+                except AttributeError:
+                    ct = ''
+                self[unicode(fieldname)] = value
+                self[unicode('_content_type_')+fieldname] = ct
 
             elif type_ in ['DateTimeField']:
                 value = str(field.get(self.context))
@@ -311,6 +311,37 @@ class Wrapper(dict):
 
             elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
                 fieldname = unicode('_datafield_'+fieldname)
+
+                value = field.get(self.context)
+                value2 = value
+
+                if type(value) is not str:
+                    if type(value.data) is str:
+                        value = base64.b64encode(value.data)
+                    else:
+                        data = value.data
+                        value = ''
+                        while data is not None:
+                            value += data.data
+                            data = data.next
+                        value = base64.b64encode(value)
+
+                try:
+                    max_filesize = int(os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
+                except ValueError:
+                    max_filesize = 20000000
+
+                if value and len(value) < max_filesize:
+                    size = value2.getSize()
+                    fname = field.getFilename(self.context)
+                    try:
+                        fname = self.decode(fname)
+                    except AttributeError:
+                        # maybe an int?
+                        fname = unicode(fname)
+                    except Exception, e:
+                        raise Exception('problems with %s: %s' %
+                                (self.context.absolute_url(), str(e)))
 
                 def get_file_data(obj):
                     value = field.get(obj)
