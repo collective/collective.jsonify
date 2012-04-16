@@ -1,6 +1,9 @@
 from AccessControl import Unauthorized
 import os
 
+SCHEMAEXTENDER_FIELDS = ['BaseExtensionField', 'TranslatableExtensionField']
+
+
 class Wrapper(dict):
     """ Gets the data in a format that can be used by the
         transmogrifier blueprints in collective.jsonmigrator
@@ -182,7 +185,6 @@ class Wrapper(dict):
     def get_workflowhistory(self):
         """ Workflow history
             :keys: _workflow_history
-
             Example:::
 
                 lalala
@@ -263,10 +265,21 @@ class Wrapper(dict):
             return
 
         import base64
-        fields = self.context.schema.fields()
+        try:
+            import archetypes.schemaextender
+            fields = self.context.Schema().fields()
+        except ImportError:
+            fields = self.context.schema.fields()
+
         for field in fields:
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
+
+            if field not in self.context.schema.fields():
+                for klass in field.__class__.__bases__:
+                    if klass.__name__ not in SCHEMAEXTENDER_FIELDS:
+                        type_ = klass.__name__
+                        break
 
             if type_ in ['StringField', 'BooleanField', 'LinesField',
                     'IntegerField', 'TextField', 'SimpleDataGridField',
@@ -415,7 +428,7 @@ class Wrapper(dict):
                 continue
 
             else:
-                raise TypeError('Unknown field type for ArchetypesWrapper in '
+                raise TypeError('Unknown field type (%s) for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
 
     def get_references(self):
