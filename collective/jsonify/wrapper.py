@@ -358,9 +358,10 @@ class Wrapper(dict):
 
                 def get_file_data(obj):
                     value = field.get(obj)
-                    size = value.getSize()
+                    size = 0
 
                     if type(value) is not str:
+                        size = value.getSize()
                         if type(value.data) is str:
                             value = base64.b64encode(value.data)
                         else:
