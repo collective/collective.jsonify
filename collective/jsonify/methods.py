@@ -3,6 +3,7 @@ import sys
 import pprint
 import traceback
 from collective.jsonify.wrapper import Wrapper, WrapperWithoutFile
+from collective.jsonify.dashboard import DashboardWrapper
 from AccessControl.SecurityManagement import newSecurityManager
 
 try:
@@ -79,3 +80,29 @@ def get_catalog_results(self):
     item_paths = [item.getPath() for item
                   in self.unrestrictedSearchResults(**query) ]
     return json.dumps(item_paths)
+
+def get_users(self):
+    """return all userids used for export the dashboards"""
+
+    pm = self.portal_membership
+    userids = [user.getId() for user in pm.listMembers()]
+    return json.dumps(userids)
+
+def get_dashboards(self):
+    """Return the dashboard from the given user
+    """
+
+    userid = self.REQUEST.get('userid', '')
+
+    try:
+        context_dict = DashboardWrapper(self, userid)
+    except Exception, e:
+        tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
+        return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
+
+    try:
+        JSON = json.dumps(context_dict)
+    except Exception, e:
+        return 'ERROR: wrapped object is not serializable: %s' % str(e)
+
+    return JSON
