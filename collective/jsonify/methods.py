@@ -2,7 +2,7 @@ import base64
 import sys
 import pprint
 import traceback
-from collective.jsonify.wrapper import Wrapper, WrapperWithoutFile
+from collective.jsonify.wrapper import Wrapper, WrapperWithoutFile, DiscussionItemWrapper
 from collective.jsonify.dashboard import DashboardWrapper
 from AccessControl.SecurityManagement import newSecurityManager
 
@@ -99,6 +99,28 @@ def get_dashboards(self):
     except Exception, e:
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
         return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
+
+    try:
+        JSON = json.dumps(context_dict)
+    except Exception, e:
+        return 'ERROR: wrapped object is not serializable: %s' % str(e)
+
+    return JSON
+
+
+def get_discussion_item(self):
+    """Return the disscusion item relevant attributes.
+    """
+
+    try:
+        context_dict = DiscussionItemWrapper(self)
+    except Exception, e:
+        tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
+        return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
+
+    for key in context_dict.keys():
+        if key.startswith('_datafield_'):
+            context_dict.pop(key)
 
     try:
         JSON = json.dumps(context_dict)

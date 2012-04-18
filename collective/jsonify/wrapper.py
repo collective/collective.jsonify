@@ -1,4 +1,6 @@
 from AccessControl import Unauthorized
+from Acquisition import aq_base
+from Products.CMFCore.utils import getToolByName
 import os
 
 SCHEMAEXTENDER_FIELDS = ['BaseExtensionField', 'TranslatableExtensionField']
@@ -10,9 +12,6 @@ class Wrapper(dict):
     """
 
     def __init__(self, context):
-
-        from Acquisition import aq_base
-        from Products.CMFCore.utils import getToolByName
 
         self.context = context
         self._context = aq_base(context)
@@ -91,6 +90,7 @@ class Wrapper(dict):
         """ Object properties
             :keys: _properties
         """
+
         self['_properties'] = []
         if getattr(self.context, 'propertyIds', False):
             for pid in self.context.propertyIds():
@@ -542,3 +542,40 @@ class WrapperWithoutFile(Wrapper):
             else:
                 raise TypeError('Unknown field type for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
+
+
+class DiscussionItemWrapper(Wrapper):
+    """Gets the Discussion Item specific attributes in a format
+    that can be used by the blueprints in collective.jsonmigrator"""
+
+    def __init__(self, context):
+        self.context = context
+        self._context = aq_base(context)
+        self.portal = getToolByName(
+            self.context, 'portal_url').getPortalObject()
+        self.pr = self.portal.portal_repository
+        self.portal_path = '/'.join(self.portal.getPhysicalPath())
+        self.portal_utils = getToolByName(self.context, 'plone_utils')
+        self.charset = self.portal.portal_properties.site_properties.default_charset
+        # newer seen it missing ... but users can change it
+        if not self.charset:
+            self.charset = 'utf-8'
+
+        for method in dir(self):
+            if method.startswith('get_'):
+                getattr(self, method)()
+
+    def get_discusionitem_attributes(self):
+        """Return all specific attributes used for the Migration
+        of Plone Discussion Items."""
+
+        self['in_reply_to'] = self.context.in_reply_to
+        self['id'] = self.context.id
+        self['title'] = self.context.title
+        self['text'] = self.context.text
+        self['cooked_text'] = self.context.cooked_text
+        self['text_format'] = self.context.text_format
+        self['creation_date'] = str(self.context.creation_date)
+        self['modification_date'] = str(self.context.modification_date)
+        self['expiration_date'] = str(self.context.expiration_date)
+        self['creator'] = self.context.Creator()

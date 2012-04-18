@@ -4,3 +4,4 @@ from collective.jsonify.methods import get_children
 from collective.jsonify.methods import get_catalog_results
 from collective.jsonify.methods import get_dashboards
 from collective.jsonify.methods import get_users
+from collective.jsonify.methods import get_discussion_item
