@@ -84,8 +84,7 @@ def get_catalog_results(self):
 def get_users(self):
     """return all userids used for export the dashboards"""
 
-    pm = self.portal_membership
-    userids = [user.getId() for user in pm.listMembers()]
+    userids = [user['userid'] for user in self.acl_users.searchUsers()]
     return json.dumps(userids)
 
 def get_dashboards(self):
