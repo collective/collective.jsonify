@@ -1,5 +1,4 @@
 
-
 Main reason for this package lays in complicate dependencies in products which
 export data from Plone. Normaly the only work with Plone 3.0 or higher (or not
 even with 3.0).
@@ -17,7 +16,7 @@ Package is TESTED_ and DOCUMENTED_.
 
 :Warning: This product may contain traces of nuts.
 :Author: `Rok Garbas`_, *migrating for you since 2008*
-:Source: http://gihub.com/collective/collective.jsonify
+:Source: http://github.com/collective/collective.jsonify
 
 
 .. _`collective.transmogrifier`: http://pypi.python.org/collective.transmogrifier
