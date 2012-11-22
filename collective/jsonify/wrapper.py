@@ -261,6 +261,10 @@ class Wrapper(dict):
             #from plone.uuid.interfaces import IUUID
             from zope.schema import getFieldsInOrder
             from datetime import datetime
+            from plone.directives import form
+            
+            if not form.Schema.providedBy(self.context):
+                return
 
         except:
             return
@@ -270,18 +274,18 @@ class Wrapper(dict):
             for fieldname, field in getFieldsInOrder(schemata):
                 try:
                     value = field.get(schemata(self.context))
+                    #value = getattr(context, name).__class__.__name__ 
                 except AttributeError:
                     continue
                 if value is field.missing_value:
                     continue
-                files_key = unicode('_datafield_' + name)
                 
-                #value = getattr(context, name).__class__.__name__ 
                 field_type = field.__class__.__name__ 
                 
-                if field_type in ('RichText'):
-                    value = unicode(value.raw_encoded)
-                elif field_type in ('NamedImage'):
+                if field_type in ('RichText',):
+                    value = unicode(value.raw)
+                    
+                elif field_type in ('NamedImage',):
                     fieldname = unicode('_datafield_' + fieldname)
 
                     if hasattr(value, 'open'):
@@ -294,25 +298,26 @@ class Wrapper(dict):
                     except ValueError:
                         max_filesize = 20000000
 
-                    if value and len(value) > max_filesize:
+                    if data and len(data) > max_filesize:
                         continue
                         
+                    import base64
                     ctype = value.contentType
                     size = value.getSize()
                     dvalue = {
-                        'data': data,
+                        'data': base64.b64encode(data),
                         'size': size,
                         'filename': value.filename or '',
                         'content_type': ctype}                    
                     value = dvalue
 
-                elif field_type in ('DateTime'):
+                elif field_type in ('DateTime',):
                     if isinstance(value, basestring):
                         value = datetime.strptime(value, '%Y-%m-%d')
                     if isinstance(value, datetime):
                         value = value.date()
 
-                #elif field_type in ('TextLine'):
+                #elif field_type in ('TextLine',):
                 else:
                     BASIC_TYPES = (unicode, int, long, float, bool, type(None))
                     if type(value) in BASIC_TYPES:
