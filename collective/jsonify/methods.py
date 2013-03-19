@@ -36,7 +36,7 @@ def get_item(self):
             JSON = json.dumps(context_dict)
             passed = True
         except Exception, error:
-            if "not serializable" in str(error):
+            if "serializable" in str(error):
                 key, context_dict = _clean_dict(context_dict, error)
                 pprint.pprint("Not serializable member %s of %s ignored" % (key, repr(self)))
                 passed = False
