@@ -10,6 +10,7 @@ except:
 
 from wrapper import Wrapper
 
+
 def _clean_dict(dct, error):
     new_dict = dct.copy()
     message = str(error)
@@ -38,10 +39,12 @@ def get_item(self):
         except Exception, error:
             if "serializable" in str(error):
                 key, context_dict = _clean_dict(context_dict, error)
-                pprint.pprint("Not serializable member %s of %s ignored" % (key, repr(self)))
+                pprint.pprint('Not serializable member %s of %s ignored'
+                     % (key, repr(self)))
                 passed = False
             else:
-                return 'ERROR: Unknown error serializing object: %s' % str(error)
+                return ('ERROR: Unknown error serializing object: %s' %
+                    str(error))
 
     return JSON
 
@@ -54,11 +57,13 @@ def get_children(self):
     children = []
     if getattr(aq_base(self), 'objectIds', False):
         children = self.objectIds()
-        # Btree based folders return an OOBTreeItems object which is not serializable
+        # Btree based folders return an OOBTreeItems
+        # object which is not serializable
         # Thus we need to convert it to a list
         if not isinstance(children, list):
             children = [item for item in children]
     return json.dumps(children)
+
 
 def get_catalog_results(self):
     """Returns a list of paths of all items found by the catalog.
@@ -71,5 +76,5 @@ def get_catalog_results(self):
         query = eval(base64.b64decode(query),
                      {"__builtins__": None}, {})
     item_paths = [item.getPath() for item
-                  in self.unrestrictedSearchResults(**query) ]
+                  in self.unrestrictedSearchResults(**query)]
     return json.dumps(item_paths)
