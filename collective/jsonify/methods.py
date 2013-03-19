@@ -12,7 +12,7 @@ from wrapper import Wrapper
 
 def _clean_dict(dct, error):
     new_dict = dct.copy()
-    message = error.message
+    message = str(error)
     for key, value in dct.items():
         if message.startswith(repr(value)):
             del new_dict[key]
