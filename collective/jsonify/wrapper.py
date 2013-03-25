@@ -198,7 +198,18 @@ class Wrapper(dict):
             :keys: _gopip
         """
         from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        self['_gopip'] = getObjPositionInParent(self.context)
+        pos = getObjPositionInParent(self.context) 
+        
+        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
+        try:
+            from plone.indexer.interfaces import IIndexer
+            if IIndexer.providedBy(pos):
+                self['_gopip'] = pos()
+                return
+        except ImportError:
+            pass
+            
+        self['_gopip'] = pos
 
     def get_id(self):
         """ Object id
