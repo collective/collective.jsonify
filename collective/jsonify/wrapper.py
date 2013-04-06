@@ -304,7 +304,8 @@ class Wrapper(dict):
                     # TODO: content_type missing
                     value = unicode(value.raw)
 
-                elif field_type in ('NamedImage',):
+                elif field_type in ('NamedImage','NamedBlobImage','NamedFile','NamedBlobFile'):
+                    # still to test above with NamedFile & NamedBlobFile
                     fieldname = unicode('_datafield_' + fieldname)
 
                     if hasattr(value, 'open'):
