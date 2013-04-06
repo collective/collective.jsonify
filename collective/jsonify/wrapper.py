@@ -344,7 +344,7 @@ class Wrapper(dict):
                     BASIC_TYPES = (unicode, int, long, float, bool, type(None))
                     if type(value) in BASIC_TYPES:
                         pass
-                    elif self.field is not None:
+                    elif field is not None:
                         value = unicode(value)
                     else:
                         raise ValueError('Unable to serialize field value')
