@@ -64,5 +64,5 @@ QUESTIONS / CONTRIBUTIONS:
 
 :Warning: This product is in Beta.
 :Author: Giorgio Pieretti
-:Source: http://github.com/collective/op.JsonExp
+:Source: http://github.com/collective/collective.jsonify
 
