@@ -1,17 +1,16 @@
+``collective.jsonify`` exports your Plone content to JSON_.
 
-Main reason for this package lays in complicate dependencies in products which
-export data from Plone. Normaly the only work with Plone 3.0 or higher (or not
-even with 3.0).
+Many packages that export data from Plone have complicated dependencies, and so
+only work with Plone 3.0 or higher (or not even with 3.0).
+``collective.jsonify``'s only dependency is simplejson_. It can be installed in
+any Plone version, probably as far back as Plone 1.0 (not tested!).
 
-Therefore this package provides no major dependency and can be installed in any
-Plone version. Probably it should work also for Plone 1.0, but this was not
-tested. Only dependency is simplejson_.
+The exported JSON_ is a collective.transmogrifier_ friendly format. Install
+``collective.jsonify`` on a site you want to export from, and setup an import
+transmogrifier pipeline on the site you're importing to, using the blueprints in
+the collective.jsonmigrator_ package.
 
-Format in which data is exported is JSON_ in collective.transmogrifier_
-friendly format. There is also blueprint developed which is laying in
-collective.jsonmigrator_ package.
-
-Package is TESTED_ and DOCUMENTED_.
+For more information see the documentation_.
 
 
 :Warning: This product may contain traces of nuts.
@@ -19,10 +18,9 @@ Package is TESTED_ and DOCUMENTED_.
 :Source: http://github.com/collective/collective.jsonify
 
 
-.. _`collective.transmogrifier`: http://pypi.python.org/collective.transmogrifier
 .. _`simplejson`: http://pypi.python.org/simplejson
-.. _`TESTED`: http://packages.python.org/collective.jsonify/testing.html
-.. _`DOCUMENTED`: http://packages.python.org/collective.jsonify
-.. _`collective.jsonmigrator`: http://pypi.python.org/pypi/collective.jsonmigrator
-.. _`Rok Garbas`: http://www.garbas.si/labs/plone-migration
 .. _`JSON`: http://en.wikipedia.org/wiki/JSON
+.. _`collective.transmogrifier`: http://pypi.python.org/collective.transmogrifier
+.. _`collective.jsonmigrator`: http://pypi.python.org/pypi/collective.jsonmigrator
+.. _`documentation`: https://collectivejsonify.readthedocs.org
+.. _`Rok Garbas`: http://www.garbas.si/labs/plone-migration
