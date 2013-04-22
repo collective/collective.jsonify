@@ -13,8 +13,7 @@ try:
 except:
     import json
 
-    
-class View(BrowserView):
+class JsonifyView(BrowserView):
     """ parameters:
         ACTIONS: QUERY -> use portal_catalog for data retrieving
                  LIST -> use portal_catalo but return COMPACT list of live objects
@@ -24,7 +23,7 @@ class View(BrowserView):
                  DELETE -> delete object from portal
     """
     def __call__(self):
-    
+
         self.params = self.request.form
         self.send_bin = self.params.get('send_bin',False)
         self.absolute_urls = self.params.get('absolute_urls',True)
@@ -37,8 +36,8 @@ class View(BrowserView):
             if self.available:
                 if (objs): return len(objs)
                 else: return
-            else: 
-                return self.get_it_out(objs)                    
+            else:
+                return self.get_it_out(objs)
         if (self.params['action'] == 'list'):
             raw_objs =  self.action_query()
             return self.action_list(raw_objs)
@@ -49,27 +48,27 @@ class View(BrowserView):
         for raw_obj in raw_objs:
             objs.append({"uid":raw_obj.UID(),"path":"/".join(raw_obj.getPhysicalPath())})
         return self.push_json(objs)
-        
+
 
     def action_query(self):
         context = aq_inner(self.context)
         catalog = getToolByName(context, 'portal_catalog')
         if self.params:
             query = self.params
-            query.pop('action',None)            
-            query.pop('send_bin',None)            
+            query.pop('action',None)
+            query.pop('send_bin',None)
             query.pop('absolute_urls',None)
             query.pop('available',None)
             query['path'] = '/'.join(self.context.getPhysicalPath())
-                        
-        brains = catalog.searchResults(query)                
+
+        brains = catalog.searchResults(query)
         objs = []
         for brain in brains:
             objs.append(brain.getObject())
         return objs
 
     def url_replacer(self, obj, searchstring, lookfor):
-        """ this is to replace JUST relative urls with absolute urls 
+        """ this is to replace JUST relative urls with absolute urls
         """
         context = aq_inner(self.context)
         root = getToolByName(context, 'portal_url').getPortalObject()
@@ -88,18 +87,18 @@ class View(BrowserView):
             else:
                 position = position +len(lookfor)
         return searchstring
-             
-    def get_it_out(self, raws):        
+
+    def get_it_out(self, raws):
         objs = []
         for raw in raws:
             wrapped = Wrapper(raw)
             for key in wrapped.keys():
                 if key.startswith('_datafield_'):
                     # get HASH: useful to check changes with APP side before download it
-                    m = md5()                  
-                    m.update(wrapped[key]['data'])                                
+                    m = md5()
+                    m.update(wrapped[key]['data'])
                     wrapped[key]['md5'] = m.hexdigest()
-                    if not(self.send_bin):            
+                    if not(self.send_bin):
                         wrapped[key]['data'] = ''
                 else:
                     if self.absolute_urls and self.absolute_urls != 'False':
@@ -107,7 +106,7 @@ class View(BrowserView):
                             for tosearch in ['src=\"','href=\"']:
                                 wrapped[key] = self.url_replacer(raw,wrapped[key],tosearch)
 
-            objs.append(wrapped)               
+            objs.append(wrapped)
         return self.push_json(objs)
 
     def push_json(self, objs):

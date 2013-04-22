@@ -1,24 +1,13 @@
 <configure
     xmlns="http://namespaces.zope.org/zope"
-    xmlns:five="http://namespaces.zope.org/five"
-    xmlns:genericsetup="http://namespaces.zope.org/genericsetup"
-    xmlns:i18n="http://namespaces.zope.org/i18n"
+    xmlns:browser="http://namespaces.zope.org/browser"
     i18n_domain="collective.jsonify">
-    
-  <five:registerPackage package="." initialize=".initialize" />
 
-  <!-- Include the sub-packages that use their own configure.zcml files. -->
-  <include package=".browser" />
-  
-  <!-- Register the installation GenericSetup extension profile -->
-  <genericsetup:registerProfile
-      name="default"
-      title="Jsonify"
-      directory="profiles/default"
-      description="Exporting for mobile APPs too!"
-      provides="Products.GenericSetup.interfaces.EXTENSION"
+  <browser:page
+      name="jsonify"
+      class=".browser.JsonifyView"
+      for="*"
+      permission="zope2.View"
       />
-  
-  <!-- -*- extra stuff goes here -*- -->
 
 </configure>
