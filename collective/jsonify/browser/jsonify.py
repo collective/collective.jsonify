@@ -1,11 +1,12 @@
-from DateTime import DateTime
-from Acquisition import aq_inner, aq_parent
+from Acquisition import aq_inner
 from Products.Five.browser import BrowserView
 from Products.CMFCore.utils import getToolByName
 from collective.jsonify.wrapper import Wrapper
-import datetime
-#import base64
-import hashlib
+
+try:
+    from hashlib import md5
+except ImportError:
+    from md5 import md5
 
 try:
     import simplejson as json
@@ -95,7 +96,7 @@ class View(BrowserView):
             for key in wrapped.keys():
                 if key.startswith('_datafield_'):
                     # get HASH: useful to check changes with APP side before download it
-                    m = hashlib.md5()                  
+                    m = md5()                  
                     m.update(wrapped[key]['data'])                                
                     wrapped[key]['md5'] = m.hexdigest()
                     if not(self.send_bin):            
