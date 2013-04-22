@@ -2,7 +2,7 @@ How to install it
 =================
 
 Put ``collective.jsonify`` and ``simplejson`` in your PYTHON_PATH. How you do
-this it does not really matter. You could:
+this does not really matter. You could:
 
 1. Play with PYTHON_PATH manually.
 2. Use ``easy_install collective.jsonify`` or ``pip collective.jsonify`` which
@@ -12,8 +12,9 @@ this it does not really matter. You could:
 
 Next, create a script in the Extensions folder with the following content::
 
-    from collective.jsonify import get_item from collective.jsonify import
-    get_children from collective.jsonify import get_catalog_results
+    from collective.jsonify import get_item
+    from collective.jsonify import get_children
+    from collective.jsonify import get_catalog_results
 
 Then run your Zope instance, go to the Zope root and create 3 External Methods:
 
