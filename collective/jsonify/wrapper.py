@@ -344,10 +344,9 @@ class Wrapper(dict):
     def get_archetypes_fields(self):
         """ If Archetypes is used then dump schema
         """
-
         try:
-            from Products.Archetypes.interfaces import IBaseObject
-            if not IBaseObject.providedBy(self.context):
+            from Products.Archetypes.interfaces.base import IBaseObject
+            if not IBaseObject.isImplementedBy(self.context):
                 return
         except:
             return
@@ -427,14 +426,14 @@ class Wrapper(dict):
 
                 if type(value) is not str:
                     if type(value.data) is str:
-                        value = base64.b64encode(value.data)
+                        value = base64.encodestring(value.data)
                     else:
                         data = value.data
                         value = ''
                         while data is not None:
                             value += data.data
                             data = data.next
-                        value = base64.b64encode(value)
+                        value = base64.encodestring(value)
 
                 try:
                     max_filesize = int(
