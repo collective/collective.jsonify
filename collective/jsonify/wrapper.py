@@ -197,13 +197,20 @@ class Wrapper(dict):
         """ Get position in parent
             :keys: _gopip
         """
-        from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        pos = getObjPositionInParent(self.context)
+	    # Does not work on old plone
+        #from Products.CMFPlone.CatalogTool import getObjPositionInParent
+        #pos = getObjPositionInParent(self.context)
+
+        # Hack for old plone
+        try:
+            pos = self.context.aq_parent.getObjectPosition(self.context.id)
+        except:
+            pos = 10000
 
         # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
         try:
             from plone.indexer.interfaces import IIndexer
-            if IIndexer.providedBy(pos):
+            if IIndexer.isImplementedBy(pos):
                 self['_gopip'] = pos()
                 return
         except ImportError:
@@ -263,7 +270,7 @@ class Wrapper(dict):
             from datetime import datetime
             from plone.directives import form
 
-            if not form.Schema.providedBy(self.context):
+            if not form.Schema.isImplementedBy(self.context):
                 return
 
         except:
@@ -305,7 +312,7 @@ class Wrapper(dict):
                     ctype = value.contentType
                     size = value.getSize()
                     dvalue = {
-                        'data': base64.b64encode(data),
+                        'data': base64.encodestring(data),
                         'size': size,
                         'filename': value.filename or '',
                         'content_type': ctype}
