@@ -203,12 +203,36 @@ class Wrapper(dict):
         """ Get position in parent
             :keys: _gopip
         """
+<<<<<<< HEAD
         from Products.CMFPlone.CatalogTool import getObjPositionInParent
         gopip = getObjPositionInParent(self.context)
         if callable(gopip):
             self['_gopip'] = gopip()
         else:
             self['_gopip'] = gopip
+=======
+
+	# Does not work on old plone
+        #from Products.CMFPlone.CatalogTool import getObjPositionInParent
+        #pos = getObjPositionInParent(self.context)
+
+        # Hack for old plone
+        try:
+            pos = self.context.aq_parent.getObjectPosition(self.context.id)
+        except:
+            pos = 10000
+
+        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
+        try:
+            from plone.indexer.interfaces import IIndexer
+            if IIndexer.isImplementedBy(pos):
+                self['_gopip'] = pos()
+                return
+        except ImportError:
+            pass
+
+        self['_gopip'] = pos
+>>>>>>> f286069... Add Plone2.0.3 compatibility
 
     def get_id(self):
         """ Object id
@@ -251,6 +275,82 @@ class Wrapper(dict):
             self['document_src'] = self.decode(document_src())
         else:
             self['_zopeobject_document_src'] = ''
+
+    def get_dexterity_fields(self):
+        """ If dexterity is used then extract fields
+        """
+        try:
+            from plone.dexterity.utils import iterSchemata
+            #from plone.uuid.interfaces import IUUID
+            from zope.schema import getFieldsInOrder
+            from datetime import datetime
+            from plone.directives import form
+
+            if not form.Schema.isImplementedBy(self.context):
+                return
+
+        except:
+            return
+
+        #get all fields for this obj
+        for schemata in iterSchemata(self.context):
+            for fieldname, field in getFieldsInOrder(schemata):
+                try:
+                    value = field.get(schemata(self.context))
+                    #value = getattr(context, name).__class__.__name__
+                except AttributeError:
+                    continue
+                if value is field.missing_value:
+                    continue
+
+                field_type = field.__class__.__name__
+
+                if field_type in ('RichText',):
+                    value = unicode(value.raw)
+
+                elif field_type in ('NamedImage',):
+                    fieldname = unicode('_datafield_' + fieldname)
+
+                    if hasattr(value, 'open'):
+                        data = value.open().read()
+                    else:
+                        data = value.data
+
+                    try:
+                        max_filesize = int(os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
+                    except ValueError:
+                        max_filesize = 20000000
+
+                    if data and len(data) > max_filesize:
+                        continue
+
+                    import base64
+                    ctype = value.contentType
+                    size = value.getSize()
+                    dvalue = {
+                        'data': base64.encodestring(data),
+                        'size': size,
+                        'filename': value.filename or '',
+                        'content_type': ctype}
+                    value = dvalue
+
+                elif field_type in ('DateTime',):
+                    if isinstance(value, basestring):
+                        value = datetime.strptime(value, '%Y-%m-%d')
+                    if isinstance(value, datetime):
+                        value = value.date()
+
+                #elif field_type in ('TextLine',):
+                else:
+                    BASIC_TYPES = (unicode, int, long, float, bool, type(None))
+                    if type(value) in BASIC_TYPES:
+                        pass
+                    elif self.field is not None:
+                        value = unicode(value)
+                    else:
+                        raise ValueError('Unable to serialize field value')
+
+                self[unicode(fieldname)] = value
 
     def get_archetypes_fields(self):
         """ If Archetypes is used then dump schema
