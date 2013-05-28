@@ -74,11 +74,12 @@ def get_catalog_results(self):
     if not hasattr(self.aq_base, 'unrestrictedSearchResults'):
         return
     query = self.REQUEST.form.get('catalog_query', None)
+    from Products.ZCatalog.ZCatalog import ZCatalog
     if query:
-        query = eval(base64.b64decode(query),
+        query = eval(base64.decodestring(query),
                      {"__builtins__": None}, {})
-    item_paths = [item.getPath() for item
-                  in self.unrestrictedSearchResults(**query) ]
+    item_paths = [item.getPath() for item in ZCatalog.searchResults(self, **query)]
+    
     return json.dumps(item_paths)
 
 def get_users(self):
