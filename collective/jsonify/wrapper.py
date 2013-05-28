@@ -203,14 +203,6 @@ class Wrapper(dict):
         """ Get position in parent
             :keys: _gopip
         """
-<<<<<<< HEAD
-        from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        gopip = getObjPositionInParent(self.context)
-        if callable(gopip):
-            self['_gopip'] = gopip()
-        else:
-            self['_gopip'] = gopip
-=======
 
 	# Does not work on old plone
         #from Products.CMFPlone.CatalogTool import getObjPositionInParent
@@ -232,7 +224,6 @@ class Wrapper(dict):
             pass
 
         self['_gopip'] = pos
->>>>>>> f286069... Add Plone2.0.3 compatibility
 
     def get_id(self):
         """ Object id
@@ -355,10 +346,9 @@ class Wrapper(dict):
     def get_archetypes_fields(self):
         """ If Archetypes is used then dump schema
         """
-
         try:
-            from Products.Archetypes.interfaces import IBaseObject
-            if not IBaseObject.providedBy(self.context):
+            from Products.Archetypes.interfaces.base import IBaseObject
+            if not IBaseObject.isImplementedBy(self.context):
                 return
         except:
             return
@@ -437,14 +427,14 @@ class Wrapper(dict):
 
                 if type(value) is not str:
                     if type(value.data) is str:
-                        value = base64.b64encode(value.data)
+                        value = base64.encodestring(value.data)
                     else:
                         data = value.data
                         value = ''
                         while data is not None:
                             value += data.data
                             data = data.next
-                        value = base64.b64encode(value)
+                        value = base64.encodestring(value)
 
                 try:
                     max_filesize = int(os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
