@@ -16,7 +16,6 @@ class Wrapper(dict):
         self.context = context
         self._context = aq_base(context)
         self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
-        self.pr = self.portal.portal_repository
         self.portal_path = '/'.join(self.portal.getPhysicalPath())
         self.portal_utils = getToolByName(self.context, 'plone_utils')
         self.charset = self.portal.portal_properties.site_properties.default_charset
@@ -363,64 +362,25 @@ class Wrapper(dict):
                     if type(value) is not str:
                         size = value.getSize()
                         if type(value.data) is str:
-                            value = base64.b64encode(value.data)
+                            value = base64.encodestring(value.data)
                         else:
                             data = value.data
                             value = ''
                             while data is not None:
                                 value += data.data
                                 data = data.next
-                            value = base64.b64encode(value)
+                            value = base64.encodestring(value)
                     return value, size
 
-                # Check if there are multiple versions
-                try:
-                    history = self.pr.getHistory(self.context, oldestFirst=True)
-                except Unauthorized, e:
-                    history = []
-
-                if history:
-                    versions = []
-                    for version in history:
-                        value, size = get_file_data(version.object)
-                        fname = field.getFilename(version.object)
-                        ctype = field.getContentType(version.object)
-
-                        versions.append({
-                            'version_id': version.version_id,
-                            'version_sysmetadata': version.sys_metadata,
-                            'data': value,
-                            'size': size,
-                            'filename': fname,
-                            'content_type': ctype,
-                        })
-
-                    # Include working copy if it is not saved as a version
-                    version_id = getattr(self.context, "version_id", None)
-                    if not self.pr.isUpToDate(self.context, version_id):
-                        value, size = get_file_data(self.context)
-                        fname = field.getFilename(self.context)
-                        ctype = field.getContentType(self.context)
-                        versions.append({
-                            'version_id': 'WORKING_COPY',
-                            'data': value,
-                            'size': size,
-                            'filename': fname,
-                            'content_type': ctype,
-                        })
-
-                    self[fieldname] = versions
-
-                else:
-                    value, size = get_file_data(self.context)
-                    fname = field.getFilename(self.context)
-                    ctype = field.getContentType(self.context)
-                    self[fieldname] = {
-                        'data': value,
-                        'size': size,
-                        'filename': fname,
-                        'content_type': ctype,
-                    }
+                value, size = get_file_data(self.context)
+                fname = field.getFilename(self.context)
+                ctype = field.getContentType(self.context)
+                self[fieldname] = {
+                    'data': value,
+                    'size': size,
+                    'filename': fname,
+                    'content_type': ctype,
+                }
 
             elif type_ in ['ReferenceField', 'ObjectTransitionField']:
                 pass

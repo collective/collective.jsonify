@@ -3,8 +3,6 @@ import sys
 import pprint
 import traceback
 from collective.jsonify.wrapper import Wrapper, WrapperWithoutFile, DiscussionItemWrapper
-from collective.jsonify.dashboard import DashboardWrapper
-from AccessControl.SecurityManagement import newSecurityManager
 
 try:
     import simplejson as json
@@ -35,11 +33,6 @@ def get_item(self):
 
 def get_item_with_file(self):
     try:
-        #use newSecurityManager
-        newSecurityManager(
-           self.portal_url.getPortalObject(),
-           self.portal_url.getPortalObject().getOwner()
-           )
         context_dict = Wrapper(self)
     except Exception, e:
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
@@ -48,6 +41,7 @@ def get_item_with_file(self):
     try:
         JSON = json.dumps(context_dict)
     except Exception, e:
+        import pdb; pdb.set_trace()
         return 'ERROR: wrapped object is not serializable: %s' % str(e)
 
     return JSON
