@@ -198,8 +198,8 @@ class Wrapper(dict):
             :keys: _gopip
         """
         from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        pos = getObjPositionInParent(self.context) 
-        
+        pos = getObjPositionInParent(self.context)
+
         # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
         try:
             from plone.indexer.interfaces import IIndexer
@@ -208,7 +208,7 @@ class Wrapper(dict):
                 return
         except ImportError:
             pass
-            
+
         self['_gopip'] = pos
 
     def get_id(self):
@@ -262,7 +262,7 @@ class Wrapper(dict):
             from zope.schema import getFieldsInOrder
             from datetime import datetime
             from plone.directives import form
-            
+
             if not form.Schema.providedBy(self.context):
                 return
 
@@ -274,17 +274,17 @@ class Wrapper(dict):
             for fieldname, field in getFieldsInOrder(schemata):
                 try:
                     value = field.get(schemata(self.context))
-                    #value = getattr(context, name).__class__.__name__ 
+                    #value = getattr(context, name).__class__.__name__
                 except AttributeError:
                     continue
                 if value is field.missing_value:
                     continue
-                
-                field_type = field.__class__.__name__ 
-                
+
+                field_type = field.__class__.__name__
+
                 if field_type in ('RichText',):
                     value = unicode(value.raw)
-                    
+
                 elif field_type in ('NamedImage',):
                     fieldname = unicode('_datafield_' + fieldname)
 
@@ -300,7 +300,7 @@ class Wrapper(dict):
 
                     if data and len(data) > max_filesize:
                         continue
-                        
+
                     import base64
                     ctype = value.contentType
                     size = value.getSize()
@@ -308,7 +308,7 @@ class Wrapper(dict):
                         'data': base64.b64encode(data),
                         'size': size,
                         'filename': value.filename or '',
-                        'content_type': ctype}                    
+                        'content_type': ctype}
                     value = dvalue
 
                 elif field_type in ('DateTime',):
@@ -325,7 +325,7 @@ class Wrapper(dict):
                     elif self.field is not None:
                         value = unicode(value)
                     else:
-                        raise ValueError('Unable to serialize field value')                
+                        raise ValueError('Unable to serialize field value')
 
                 self[unicode(fieldname)] = value
 
@@ -342,7 +342,11 @@ class Wrapper(dict):
             return
 
         import base64
-        fields = self.context.schema.fields()
+
+        fields = []
+        for schemata in self.context.Schemata().values():
+            fields.extend(schemata.fields())
+
         for field in fields:
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
@@ -357,7 +361,7 @@ class Wrapper(dict):
                 except AttributeError:
                     value = field.get(self.context)
 
-                if callable(value) is True:
+                if callable(value):
                     value = value()
 
                 if value and type_ in ['StringField', 'TextField']:
@@ -388,7 +392,8 @@ class Wrapper(dict):
                 if value:
                     self[unicode(fieldname)] = value
 
-            elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
+            elif type_ in ['ImageField', 'FileField', 'AttachmentField',
+                    'ExtensionBlobField']:
                 fieldname = unicode('_datafield_'+fieldname)
                 value = field.get(self.context)
                 value2 = value
