@@ -351,6 +351,9 @@ class Wrapper(dict):
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
 
+            if type_[0] == '_' and type_.endswith('ExtensionField'):
+                type_ = type_[1: -len('ExtensionField')] + 'Field'
+
             if type_ in ['StringField', 'BooleanField', 'LinesField',
                     'IntegerField', 'TextField', 'SimpleDataGridField',
                     'FloatField', 'FixedPointField', 'TALESString',
