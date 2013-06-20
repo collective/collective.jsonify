@@ -269,14 +269,14 @@ class Wrapper(dict):
             fields = self.context.Schema().fields()
         except ImportError:
             fields = self.context.schema.fields()
-        
+
         if getattr(self.context, 'portal_type') == "PloneFormMailer":
             try:
                 from Products.Formulator.FormToXML import formToXML
                 zmi_form = self.context.unrestrictedTraverse('form')
                 self['form_data'] = formToXML(zmi_form)
             except:
-                pass                
+                pass
 
         for field in fields:
             fieldname = unicode(field.__name__)
@@ -292,7 +292,7 @@ class Wrapper(dict):
                     'IntegerField', 'TextField', 'SimpleDataGridField',
                     'FloatField', 'FixedPointField', 'TALESString',
                     'TALESLines', 'ZPTField', 'DataGridField', 'EmailField']:
-                
+
                 try:
                     value = field.getRaw(self.context)
                 except AttributeError:
@@ -403,13 +403,13 @@ class Wrapper(dict):
     def get_references(self):
         """ AT references
         """
+
         try:
-            from Products.Archetypes.interfaces import IReferenceable
-            if not IReferenceable.providedBy(self.context):
+            from Products.Archetypes.interfaces.referenceable import IReferenceable
+            if not IReferenceable.isImplementedBy(self.context):
                 return
         except:
             return
-
         self['_atrefs'] = {}
         self['_atbrefs'] = {}
         relationships = self.context.getRelationships()
