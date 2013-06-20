@@ -346,7 +346,21 @@ class Wrapper(dict):
             return
 
         import base64
-        fields = self.context.schema.fields()
+
+        try:
+            import archetypes.schemaextender
+            fields = self.context.Schema().fields()
+        except ImportError:
+            fields = self.context.schema.fields()
+
+        if getattr(self.context, 'portal_type') == "PloneFormMailer":
+            try:
+                from Products.Formulator.FormToXML import formToXML
+                zmi_form = self.context.unrestrictedTraverse('form')
+                self['form_data'] = formToXML(zmi_form)
+            except:
+                pass
+
         for field in fields:
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
@@ -360,6 +374,7 @@ class Wrapper(dict):
             ]
 
             if type_ in fieldnames:
+
                 try:
                     value = field.getRaw(self.context)
                 except AttributeError:
