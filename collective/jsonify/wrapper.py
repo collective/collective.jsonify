@@ -480,13 +480,13 @@ class Wrapper(dict):
     def get_references(self):
         """ AT references
         """
+
         try:
-            from Products.Archetypes.interfaces import IReferenceable
-            if not IReferenceable.providedBy(self.context):
+            from Products.Archetypes.interfaces.referenceable import IReferenceable
+            if not IReferenceable.isImplementedBy(self.context):
                 return
         except:
             return
-
         self['_atrefs'] = {}
         self['_atbrefs'] = {}
         relationships = self.context.getRelationships()
