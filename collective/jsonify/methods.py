@@ -41,7 +41,6 @@ def get_item_with_file(self):
     try:
         JSON = json.dumps(context_dict)
     except Exception, e:
-        import pdb; pdb.set_trace()
         return 'ERROR: wrapped object is not serializable: %s' % str(e)
 
     return JSON
