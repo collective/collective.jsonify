@@ -198,8 +198,8 @@ class Wrapper(dict):
             :keys: _gopip
         """
         from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        pos = getObjPositionInParent(self.context) 
-        
+        pos = getObjPositionInParent(self.context)
+
         # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
         try:
             from plone.indexer.interfaces import IIndexer
@@ -208,7 +208,7 @@ class Wrapper(dict):
                 return
         except ImportError:
             pass
-            
+
         self['_gopip'] = pos
 
     def get_id(self):
@@ -262,7 +262,7 @@ class Wrapper(dict):
             from zope.schema import getFieldsInOrder
             from datetime import datetime
             from plone.directives import form
-            
+
             if not form.Schema.providedBy(self.context):
                 return
 
@@ -274,17 +274,17 @@ class Wrapper(dict):
             for fieldname, field in getFieldsInOrder(schemata):
                 try:
                     value = field.get(schemata(self.context))
-                    #value = getattr(context, name).__class__.__name__ 
+                    #value = getattr(context, name).__class__.__name__
                 except AttributeError:
                     continue
                 if value is field.missing_value:
                     continue
-                
-                field_type = field.__class__.__name__ 
-                
+
+                field_type = field.__class__.__name__
+
                 if field_type in ('RichText',):
                     value = unicode(value.raw)
-                    
+
                 elif field_type in ('NamedImage',):
                     fieldname = unicode('_datafield_' + fieldname)
 
@@ -300,7 +300,7 @@ class Wrapper(dict):
 
                     if data and len(data) > max_filesize:
                         continue
-                        
+
                     import base64
                     ctype = value.contentType
                     size = value.getSize()
@@ -308,7 +308,7 @@ class Wrapper(dict):
                         'data': base64.b64encode(data),
                         'size': size,
                         'filename': value.filename or '',
-                        'content_type': ctype}                    
+                        'content_type': ctype}
                     value = dvalue
 
                 elif field_type in ('DateTime',):
@@ -325,10 +325,14 @@ class Wrapper(dict):
                     elif self.field is not None:
                         value = unicode(value)
                     else:
-                        raise ValueError('Unable to serialize field value')                
+                        raise ValueError('Unable to serialize field value')
 
                 self[unicode(fieldname)] = value
 
+    def _get_at_field_value(self, field):
+        if field.accessor is not None:
+            return getattr(self.context, field.accessor)()
+        return field.get(self.context)
 
     def get_archetypes_fields(self):
         """ If Archetypes is used then dump schema
@@ -347,15 +351,18 @@ class Wrapper(dict):
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
 
-            if type_ in ['StringField', 'BooleanField', 'LinesField',
-                    'IntegerField', 'TextField', 'SimpleDataGridField',
-                    'FloatField', 'FixedPointField', 'TALESString',
-                    'TALESLines', 'ZPTField', 'DataGridField', 'EmailField']:
+            fieldnames = [
+                'StringField', 'BooleanField', 'LinesField',
+                'IntegerField', 'TextField', 'SimpleDataGridField',
+                'FloatField', 'FixedPointField', 'TALESString',
+                'TALESLines', 'ZPTField', 'DataGridField', 'EmailField'
+            ]
 
+            if type_ in fieldnames:
                 try:
                     value = field.getRaw(self.context)
                 except AttributeError:
-                    value = field.get(self.context)
+                    value = self._get_at_field_value(field)
 
                 if callable(value) is True:
                     value = value()
@@ -367,30 +374,32 @@ class Wrapper(dict):
                         # maybe an int?
                         value = unicode(value)
                     except Exception, e:
-                        raise Exception('problems with %s: %s' %
-                                (self.context.absolute_url(), str(e)))
+                        raise Exception('problems with %s: %s' % (
+                            self.context.absolute_url(), str(e))
+                        )
                 elif value and type_ == 'DataGridField':
-                     for i, row in enumerate(value):
-                         for col_key in row.keys():
-                             col_value = row[col_key]
-                             if type(col_value) in (unicode, str):
-                                 value[i][col_key] = self.decode(col_value)
+                    for i, row in enumerate(value):
+                        for col_key in row.keys():
+                            col_value = row[col_key]
+                            if type(col_value) in (unicode, str):
+                                value[i][col_key] = self.decode(col_value)
 
                 try:
                     ct = field.getContentType(self.context)
                 except AttributeError:
                     ct = ''
                 self[unicode(fieldname)] = value
-                self[unicode('_content_type_')+fieldname] = ct
+                self[unicode('_content_type_') + fieldname] = ct
 
             elif type_ in ['DateTimeField']:
-                value = str(field.get(self.context))
+                value = str(self._get_at_field_value(field))
                 if value:
                     self[unicode(fieldname)] = value
 
             elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
-                fieldname = unicode('_datafield_'+fieldname)
-                value = field.get(self.context)
+                fieldname = unicode('_datafield_' + fieldname)
+
+                value = self._get_at_field_value(field)
                 value2 = value
 
                 if type(value) is not str:
@@ -405,28 +414,42 @@ class Wrapper(dict):
                         value = base64.b64encode(value)
 
                 try:
-                    max_filesize = int(os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
+                    max_filesize = int(
+                        os.environ.get('JSONIFY_MAX_FILESIZE', 20000000)
+                    )
                 except ValueError:
                     max_filesize = 20000000
 
                 if value and len(value) < max_filesize:
                     size = value2.getSize()
-                    fname = field.getFilename(self.context)
+                    try:
+                        fname = field.getFilename(self.context)
+                    except AttributeError:
+                        fname = value2.getFilename()
+
                     try:
                         fname = self.decode(fname)
                     except AttributeError:
                         # maybe an int?
                         fname = unicode(fname)
                     except Exception, e:
-                        raise Exception('problems with %s: %s' %
-                                (self.context.absolute_url(), str(e)))
+                        raise Exception(
+                            'problems with %s: %s' % (
+                                self.context.absolute_url(), str(e)
+                            )
+                        )
 
-                    ctype = field.getContentType(self.context)
+                    try:
+                        ctype = field.getContentType(self.context)
+                    except AttributeError:
+                        ctype = value2.getContentType()
+
                     self[fieldname] = {
                         'data': value,
                         'size': size,
                         'filename': fname or '',
-                        'content_type': ctype}
+                        'content_type': ctype
+                    }
 
             elif type_ in ['ReferenceField']:
                 pass

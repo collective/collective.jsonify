@@ -1,7 +1,16 @@
 Changelog
 =========
+
 0.2 (2013-04-06)
 ----------------
+
+- Add Blob fields support. Use specific methods to retrieve
+  filename, content type and size.
+  [gborelli]
+
+- Add _get_at_field_value to wrappe.Wrapper in order to use accessor method
+  for Archetypes fields.
+  [gborelli]
 
 - @@jsonify view added. See README_JSONIFY_VIEW.rst for more
   [pieretti]
