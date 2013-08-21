@@ -4,6 +4,9 @@ Changelog
 0.2 (2013-04-06)
 ----------------
 
+- Support p.a.collection QueryField.
+  [jone]
+
 - Add Blob fields support. Use specific methods to retrieve
   filename, content type and size.
   [gborelli]
