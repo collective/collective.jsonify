@@ -355,7 +355,8 @@ class Wrapper(dict):
                 'StringField', 'BooleanField', 'LinesField',
                 'IntegerField', 'TextField', 'SimpleDataGridField',
                 'FloatField', 'FixedPointField', 'TALESString',
-                'TALESLines', 'ZPTField', 'DataGridField', 'EmailField'
+                'TALESLines', 'ZPTField', 'DataGridField', 'EmailField',
+                'QueryField',
             ]
 
             if type_ in fieldnames:
