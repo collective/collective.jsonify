@@ -3,7 +3,7 @@
 Many packages that export data from Plone have complicated dependencies, and so
 only work with Plone 3.0 or higher (or not even with 3.0).
 ``collective.jsonify``'s only dependency is simplejson_. It can be installed in
-any Plone version, probably as far back as Plone 1.0 (not tested!).
+any Plone version, probably as far back as Plone 2.0 (not tested!).
 
 The exported JSON_ is a collective.transmogrifier_ friendly format. Install
 ``collective.jsonify`` on a site you want to export from, and setup an import
