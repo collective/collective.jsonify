@@ -36,6 +36,7 @@ class Wrapper(dict):
                 return s.decode(encoding)
             except:
                 pass
+
         return s.decode(test_encodings[0], 'ignore')
 
 
@@ -93,7 +94,7 @@ class Wrapper(dict):
                 val = self.context.getProperty(pid)
                 typ = self.context.getPropertyType(pid)
                 if typ == 'string':
-                    val = self.decode(val)
+                    val = self.decode(str(val))
                 self['_properties'].append(
                         (pid, val, self.context.getPropertyType(pid)))
 
