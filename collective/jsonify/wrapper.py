@@ -224,10 +224,7 @@ class Wrapper(dict):
         """
         self['_id'] = self.context.getId()
 
-    def get_cmf_default_fields(self):
-        pass
-
-    def get_ttw_fields(self):
+    def get_formulator_fields(self):
         if not hasattr(self.context, 'getFields'):
             return
 
@@ -237,7 +234,6 @@ class Wrapper(dict):
             if field.meta_type in (
                 'EmailField',
                 'LabelField',
-                'LinesField',
                 'LinkField',
                 'PasswordField',
                 'PatternField',
@@ -245,15 +241,14 @@ class Wrapper(dict):
                 'StringField',
                 'TextAreaField',
             ):
-
-                val = getattr(self.context, field.id, '')
-                val = self.decode(val)
+                self[field.id] = self.decode(
+                    getattr(self.context, field.id, ''))
 
             # Date fields
             elif field.meta_type in (
                 'DateTimeField',
             ):
-                val = getattr(self.context, field.id, False)
+                val = getattr(self.context, field.id, None)
 
                 if isinstance(val, basestring):
                     val = DateTime(val, '%Y-%m-%d')
@@ -262,13 +257,26 @@ class Wrapper(dict):
                 if isinstance(val, datetime):
                     val = val.date()
 
-            # Numbers and booleans
+                self[field.id] = val
+
+            # Numbers
             elif field.meta_type in (
                 'IntegerField',
                 'FloatField',
+            ):
+                self[field.id] = getattr(self.context, field.id, 0)
+
+            # Boolean
+            elif field.meta_type in (
                 'CheckBoxField',
             ):
-                val = getattr(self.context, field.id, '')
+                self[field.id] = getattr(self.context, field.id, False)
+
+            elif field.meta_type in (
+                'LinesField',
+            ):
+                values = getattr(self.context, field.id, [])
+                self[field.id] = [self.decode(val) for val in values]
 
             elif field.meta_type in (
                 'FileField',
@@ -278,12 +286,6 @@ class Wrapper(dict):
                 'RadioField',
             ):
                 raise('Not implemented yet: %s' % (field.id))
-
-            # Set value
-            if val:
-                self[field.id] = val
-            else:
-                self[field.id] = ''
 
     # TODO: this should be only for non archetypes
     def get_dublin_core(self):
@@ -296,9 +298,10 @@ class Wrapper(dict):
 
         from DateTime import DateTime
         from datetime import datetime
+        import base64
 
         # string
-        for field in ('title', 'description', 'rights', 'language'):
+        for field in ('title', 'description', 'rights', 'language', 'text'):
             val = getattr(self.context, field, False)
             if val:
                 self[field] = self.decode(val)
@@ -330,6 +333,20 @@ class Wrapper(dict):
                 self[field] = str(val)
             else:
                 self[field] = ''
+
+        for field in ['data']:
+            value = getattr(self.context, field, None)
+            if not value or not hasattr(value, 'data'):
+                continue
+
+            fieldname = unicode('_datafield_' + field)
+
+            self[fieldname] = {
+                'data': base64.encodestring(value.data),
+                'filename': self.get('title', ''),
+                'content_type': getattr(
+                    self.context, 'content_type', 'image/png')
+            }
 
     def get_zopeobject_document_src(self):
         document_src = getattr(self.context, 'document_src', None)
