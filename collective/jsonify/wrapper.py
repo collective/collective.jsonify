@@ -39,7 +39,6 @@ class Wrapper(dict):
 
         return s.decode(test_encodings[0], 'ignore')
 
-
     def get_path(self):
         """ Path of object
 
@@ -225,34 +224,112 @@ class Wrapper(dict):
         """
         self['_id'] = self.context.getId()
 
+    def get_cmf_default_fields(self):
+        pass
+
+    def get_ttw_fields(self):
+        if not hasattr(self.context, 'getFields'):
+            return
+
+        fields = self.context.getFields()
+        for field in fields:
+            # Stringfields
+            if field.meta_type in (
+                'EmailField',
+                'LabelField',
+                'LinesField',
+                'LinkField',
+                'PasswordField',
+                'PatternField',
+                'RawTextAreaField',
+                'StringField',
+                'TextAreaField',
+            ):
+
+                val = getattr(self.context, field.id, '')
+                val = self.decode(val)
+
+            # Date fields
+            elif field.meta_type in (
+                'DateTimeField',
+            ):
+                val = getattr(self.context, field.id, False)
+
+                if isinstance(val, basestring):
+                    val = DateTime(val, '%Y-%m-%d')
+                if isinstance(val, DateTime):
+                    val = DateTime.strftime(val, '%Y-%m-%d')
+                if isinstance(val, datetime):
+                    val = val.date()
+
+            # Numbers and booleans
+            elif field.meta_type in (
+                'IntegerField',
+                'FloatField',
+                'CheckBoxField',
+            ):
+                val = getattr(self.context, field.id, '')
+
+            elif field.meta_type in (
+                'FileField',
+                'ListField',
+                'MultiCheckBoxField',
+                'MultiListField',
+                'RadioField',
+            ):
+                raise('Not implemented yet: %s' % (field.id))
+
+            # Set value
+            if val:
+                self[field.id] = val
+            else:
+                self[field.id] = ''
+
     # TODO: this should be only for non archetypes
-    #def get_dublin_core(self):
-    #    # string
-    #    for field in ('title', 'description', 'rights', 'language'):
-    #        val = getattr(self.context, field, False)
-    #        if val:
-    #            self[field] = self.decode(val)
-    #        else:
-    #            self[field] = ''
-    #    # tuple
-    #    for field in ('subject', 'contributors'):
-    #        self[field] = []
-    #        val_tuple = getattr(self.context, field, False)
-    #        if val_tuple:
-    #            for val in val_tuple:
-    #                self[field].append(self.decode(val))
-    #            self[field] = tuple(self[field])
-    #        else:
-    #            self[field] = ()
-    #    # datetime
-    #    #TODO
-    #    for field in ['creation_date', 'modification_date', 'expiration_date',
-    #                  'effective_date', 'expirationDate', 'effectiveDate']:
-    #        val = getattr(self.context, field, False)
-    #        if val:
-    #            self[field] = str(val)
-    #        else:
-    #            self[field] = ''
+    def get_dublin_core(self):
+        try:
+            from Products.Archetypes.interfaces.base import IBaseObject
+            if IBaseObject.isImplementedBy(self.context):
+                return
+        except:
+            return
+
+        from DateTime import DateTime
+        from datetime import datetime
+
+        # string
+        for field in ('title', 'description', 'rights', 'language'):
+            val = getattr(self.context, field, False)
+            if val:
+                self[field] = self.decode(val)
+            else:
+                self[field] = ''
+        # tuple
+        for field in ('subject', 'contributors'):
+            self[field] = []
+            val_tuple = getattr(self.context, field, False)
+            if val_tuple:
+                for val in val_tuple:
+                    self[field].append(self.decode(val))
+                self[field] = tuple(self[field])
+            else:
+                self[field] = ()
+        # datetime
+        for field in ['creation_date', 'modification_date', 'expiration_date',
+                      'effective_date', 'expirationDate', 'effectiveDate']:
+            val = getattr(self.context, field, False)
+
+            if isinstance(val, basestring):
+                val = DateTime(val, '%Y-%m-%d')
+            if isinstance(val, DateTime):
+                val = DateTime.strftime(val, '%Y-%m-%d')
+            if isinstance(val, datetime):
+                val = val.date()
+
+            if val:
+                self[field] = str(val)
+            else:
+                self[field] = ''
 
     def get_zopeobject_document_src(self):
         document_src = getattr(self.context, 'document_src', None)
