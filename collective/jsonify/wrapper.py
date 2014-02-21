@@ -39,6 +39,7 @@ class Wrapper(dict):
 
         return s.decode(test_encodings[0], 'ignore')
 
+
     def get_path(self):
         """ Path of object
 
@@ -298,12 +299,14 @@ class Wrapper(dict):
 
         from DateTime import DateTime
         from datetime import datetime
+        from Products.CMFCore.interfaces.Contentish import Contentish
         import base64
 
         # string
         for field in ('title', 'description', 'rights', 'language', 'text'):
             val = getattr(self.context, field, False)
-            if val:
+            # Sometimes its possible that we get a ttwobject
+            if val and not Contentish.isImplementedBy(val):
                 self[field] = self.decode(val)
             else:
                 self[field] = ''
@@ -336,15 +339,15 @@ class Wrapper(dict):
 
         for field in ['data']:
             value = getattr(self.context, field, None)
-            if not value or not hasattr(value, 'data'):
+            if not value:
                 continue
 
             fieldname = unicode('_datafield_' + field)
 
             self[fieldname] = {
-                'data': base64.encodestring(value.data),
-                'filename': self.get('title', ''),
-                'content_type': getattr(
+                'data': base64.encodestring(value),
+                'filename': self.context.getId(),
+                'contenttype': getattr(
                     self.context, 'content_type', 'image/png')
             }
 
