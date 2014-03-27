@@ -1,10 +1,10 @@
 How to install it
 =================
 
-Put ``collective.jsonify`` and ``simplejson`` in your PYTHON_PATH. How you do
+Put ``collective.jsonify`` and ``simplejson`` in your PYTHONPATH. How you do
 this does not really matter. You could:
 
-1. Play with PYTHON_PATH manually.
+1. Play with PYTHONPATH manually.
 2. Use ``easy_install collective.jsonify`` or ``pip collective.jsonify`` which
    will also pull ``simplejson``.
 3. Use buildout. Add it under the ``eggs`` option for the instance you want to
@@ -54,7 +54,7 @@ cannot predict all usecases, but if you have custom requirements it's easy to
 extend functionality. You have a few options:
 
  - You can pass additional wrappers to the ``get_item`` External Method. Of course you
-   have to have these wrappers in your PYTHON_PATH::
+   have to have these wrappers in your PYTHONPATH::
 
         http://localhost:8080/Plone/front-page/get_item?additional_wrappers=myproject.wrapper1.Wrapper;myproject.wrapper2.Wrapper
 
