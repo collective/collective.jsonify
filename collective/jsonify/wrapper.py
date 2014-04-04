@@ -339,11 +339,10 @@ class Wrapper(dict):
 
         for field in ['data']:
             value = getattr(self.context, field, None)
-            if not value:
+            if not value or isinstance(value, bool):
                 continue
 
             fieldname = unicode('_datafield_' + field)
-
             self[fieldname] = {
                 'data': base64.encodestring(value),
                 'filename': self.context.getId(),
