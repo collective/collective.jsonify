@@ -2,6 +2,12 @@ from AccessControl import Unauthorized
 from Acquisition import aq_base
 from Products.CMFCore.utils import getToolByName
 import os
+from zope.annotation.interfaces import IAnnotations
+from simplelayout.base.interfaces import ISimplelayoutTwoColumnView
+from simplelayout.base.interfaces import ISlotB
+from plone.portlets.interfaces import IPortletManager
+from plone.portlets.interfaces import IPortletAssignmentMapping
+
 
 SCHEMAEXTENDER_FIELDS = ['BaseExtensionField', 'TranslatableExtensionField']
 
@@ -558,6 +564,40 @@ class Wrapper(dict):
                                  ).getPhysicalPath())[len(self.portal_path):]
         self['_canonicalTranslation'] = self.context.isCanonical()
 
+    def get_sl_annotations(self):
+        """Get Annotations for simplelayout"""
+        anno = IAnnotations(self.context)
+        imgLayout = anno.get('imageLayout', '')
+        self['imageLayout'] = imgLayout
+        self['two_columns'] = ISimplelayoutTwoColumnView.providedBy(self.context)
+        self['right_slot'] = ISlotB.providedBy(self.context)
+
+    def get_portlets(self):
+        """bla"""
+        portlets = []
+        from zope.component import getUtility, getMultiAdapter
+        for managername in ['plone.rightcolumn', 'plone.leftcolumn']:
+            manager = getUtility(IPortletManager, name=managername)
+            assignment = getMultiAdapter((self.context, manager),
+                                          IPortletAssignmentMapping).__of__(self.context)
+            for item in assignment:
+                portlet_dict = {}
+                portlet = assignment.get(item)
+                portlet_dict['class'] = '.'.join([portlet.__module__, portlet.__class__.__name__])
+                portlet_dict['__dict__'] = portlet.__dict__.copy()
+	        portlet_dict['manager'] = managername
+                if portlet_dict['__dict__'].has_key( '__parent__'):
+			del portlet_dict['__dict__']['__parent__']
+                portlets.append(portlet_dict)
+        self['portlets'] = portlets
+
+    def get_portal_types_of_children(self):
+        """try something
+        """
+        portal_types = []
+        for obj_id in self.context.objectIds():
+            portal_types.append(self.context.get(obj_id).portal_type)
+        self['childrencontenttypes'] = list(set(portal_types))
 
 class WrapperWithoutFile(Wrapper):
 
@@ -587,8 +627,6 @@ class WrapperWithoutFile(Wrapper):
                     value = field.getRaw(self.context)
                 except AttributeError:
                     value = field.get(self.context)
-
-                if callable(value) is True:
                     value = value()
 
                 if value and type_ in ['StringField', 'TextField']:
@@ -632,7 +670,6 @@ class WrapperWithoutFile(Wrapper):
             else:
                 raise TypeError('Unknown field type for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
-
 
 class DiscussionItemWrapper(Wrapper):
     """Gets the Discussion Item specific attributes in a format
