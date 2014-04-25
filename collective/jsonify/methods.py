@@ -29,8 +29,9 @@ def get_item(self):
     try:
         context_dict = Wrapper(self)
     except Exception, e:
+        etype = sys.exc_info()[0]
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
-        return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
+        return 'ERROR: exception wrapping object: %s: %s\n%s' % (etype, str(e), tb)
 
     passed = False
     while not passed:
