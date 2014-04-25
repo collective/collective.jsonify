@@ -1,4 +1,12 @@
-from setuptools import setup, find_packages
+#!/usr/bin/env python
+import sys
+if sys.version_info < (2, 3):
+    from distutils.core import setup
+
+    def find_packages(exclude=None):
+        return ['collective', 'collective.jsonify']
+else:
+    from setuptools import setup, find_packages
 
 version = '0.3.dev0'
 
