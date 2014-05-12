@@ -98,7 +98,7 @@ class Wrapper(dict):
             for pid in self.context.propertyIds():
                 val = self.context.getProperty(pid)
                 typ = self.context.getPropertyType(pid)
-                if typ == 'string':
+                if typ == 'string' and isinstance(val, str):
                     val = self.decode(val)
                 self['_properties'].append(
                     (pid, val, self.context.getPropertyType(pid))
