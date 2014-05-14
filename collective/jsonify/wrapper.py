@@ -118,8 +118,17 @@ class Wrapper(dict):
             :keys: _layout, _defaultpage
         """
         try:
-            _browser = '/'.join(
-                self.portal_utils.browserDefault(self.context)[1])
+            # When migrating Zope folders to Plone folders
+            # set defaultpage to "index_html"
+            from Products.CMFCore.PortalFolder import PortalFolder
+            if isinstance(self.context, PortalFolder):
+                self['_defaultpage'] = 'index_html'
+                return
+        except:
+            pass
+
+        try:
+            _browser = '/'.join(self.portal_utils.browserDefault(self.context)[1])
             if _browser not in ['folder_listing', 'index_html']:
                 self['_layout'] = ''
                 self['_defaultpage'] = _browser
