@@ -45,6 +45,12 @@ views" on content you want to explore::
 The first gets all content out of ``front-page``; the second lists all content
 contained inside this object and returns their ids.
 
+Finally, you can use ``get_catalog_results`` to catalog query results as a list
+of paths. To use it, you need to hand your query as a base64'ed Python dict
+string. Here's an example of doing this with curl::
+
+    curl --data catalog_query=$(echo '{"Type": "Slide"}' | base64 -w0) \
+      'http://localhost:8080/Plone/portal_catalog/get_catalog_results
 
 How to extend it
 ================
