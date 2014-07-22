@@ -360,7 +360,7 @@ class Wrapper(dict):
 
             if value and len(value) < max_filesize:
                 size = orig_value.getSize()
-                fname = orig_value.id()
+                fname = orig_value.getId()
                 try:
                     fname = self.decode(fname)
                 except AttributeError:
