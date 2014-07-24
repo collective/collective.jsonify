@@ -287,13 +287,21 @@ class Wrapper(dict):
             else:
                 self[field] = ()
         # datetime fields
-        for field in ['creation_date', 'modification_date', 'expiration_date',
+        for field in ['creation_date', 'expiration_date',
                       'effective_date', 'expirationDate', 'effectiveDate']:
             val = getattr(self.context, field, False)
             if val:
                 self[field] = str(val)
             else:
                 self[field] = ''
+        # modification_date: 
+        # bobobase_modification_time seems to have better data than 
+        # modification_date in Zope 2.6.4 - 2.9.7
+        val = self.context.bobobase_modification_time()
+        if val:
+            self['modification_date'] = str(val)
+        else:
+            self['modification_date'] = ''
 
 
     def get_zope_cmfcore_fields(self):
