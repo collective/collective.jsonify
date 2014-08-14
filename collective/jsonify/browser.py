@@ -43,12 +43,9 @@ class JsonifyView(BrowserView):
             return self.action_list(raw_objs)
 
 
-    def action_list(self,raw_objs):
-        objs = []
-        for raw_obj in raw_objs:
-            objs.append({"uid":raw_obj.UID(),"path":"/".join(raw_obj.getPhysicalPath())})
+    def action_list(self, raw_objs):
+        objs = [{"uid":raw_obj.UID(),"path":"/".join(raw_obj.getPhysicalPath())} for raw_obj in raw_objs]
         return self.push_json(objs)
-
 
     def action_query(self):
         context = aq_inner(self.context)
@@ -62,10 +59,7 @@ class JsonifyView(BrowserView):
             query['path'] = '/'.join(self.context.getPhysicalPath())
 
         brains = catalog.searchResults(query)
-        objs = []
-        for brain in brains:
-            objs.append(brain.getObject())
-        return objs
+        return [brain.getObject() for brain in brains if brain]
 
     def url_replacer(self, obj, searchstring, lookfor):
         """ this is to replace JUST relative urls with absolute urls
