@@ -356,7 +356,6 @@ class Wrapper(dict):
                 'IntegerField', 'TextField', 'SimpleDataGridField',
                 'FloatField', 'FixedPointField', 'TALESString',
                 'TALESLines', 'ZPTField', 'DataGridField', 'EmailField',
-                'QueryField',
             ]
 
             if type_ in fieldnames:
@@ -458,6 +457,9 @@ class Wrapper(dict):
             elif type_ in ['ComputedField']:
                 continue
 
+            elif type_ in ['QueryField']:
+                value = field.getRaw(self.context)
+                self[fieldname] = [dict(q) for q in value] 
             else:
                 raise TypeError('Unknown field type for ArchetypesWrapper in '
                         '%s in %s' % (fieldname, self.context.absolute_url()))
