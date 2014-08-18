@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.2 (2013-04-06)
+0.2 (2014-08-18)
 ----------------
 
 - Support p.a.collection QueryField.
