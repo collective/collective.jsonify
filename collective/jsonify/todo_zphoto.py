@@ -1,9 +1,7 @@
+"""These wrappers get the data in a format that can be used by the
+atschemaupdater blueprint from plone.app.transmogrifier and the atdatafield
+bluprint from this same package.
 """
-These wrappers get the data in a format that can be used by
-the atschemaupdater blueprint from plone.app.transmogrifier
-and the atdatafield bluprint from this same package.
-"""
-
 from base_wrapper import BaseWrapper
 
 
@@ -17,7 +15,7 @@ class ZPhotoWrapper(BaseWrapper):
         self['path'] = self.obj.path
         self['dir'] = self.obj.dir
         self['filename'] = self.obj.filename
-        #self['_thumbs'] = obj._thumbs
+        # self['_thumbs'] = obj._thumbs
         self['dict_info'] = self.obj.dict_info
         self['format'] = self.obj.format
         self['tmpdir'] = self.obj.tmpdir
@@ -38,7 +36,7 @@ class ZPhotoSlidesWrapper(BaseWrapper):
             self['sort_field'] = self.obj.sort_field
             self['allow_export'] = self.obj.allow_export
             self['show_export'] = self.obj.show_export
-            #self['visits_log'] = obj.visits_log
+            # self['visits_log'] = obj.visits_log
             self['non_hidden_pic'] = self.obj.non_hidden_pic
             self['list_non_hidden_pic'] = self.obj.list_non_hidden_pic
             self['rows'] = self.obj.rows
@@ -49,7 +47,8 @@ class ZPhotoSlidesWrapper(BaseWrapper):
             self['symbolic_photo'] = self.obj.symbolic_photo
             self['keywords'] = self.obj.keywords
             self['first_big'] = self.obj.first_big
-            self['show_automatic_slide_show'] = self.obj.show_automatic_slide_show
+            self['show_automatic_slide_show'] =\
+                self.obj.show_automatic_slide_show
             self['show_viewed'] = self.obj.show_viewed
             self['show_exif'] = self.obj.show_exif
             self['photo_space'] = self.obj.photo_space
@@ -61,12 +60,13 @@ class ZPhotoSlidesWrapper(BaseWrapper):
             self['actual_css'] = self.obj.actual_css
             self['thumb_width'] = self.obj.thumb_width
             self['thumb_height'] = self.obj.thumb_height
-            #self['list_rating'] = obj.list_rating
+            # self['list_rating'] = obj.list_rating
             self['photo_folder'] = self.obj.photo_folder
             self['tmpdir'] = self.obj.tmpdir
             self['lib'] = self.obj.lib
             self['convert'] = self.obj.convert
             self['use_http_cache'] = self.obj.use_http_cache
-        except Exception, e:
-            raise Exception('Problems with %s: %s' % (self.obj.absolute_url(), str(e)))
-
+        except Exception as e:
+            raise Exception(
+                'Problems with %s: %s' %
+                (self.obj.absolute_url(), str(e)))

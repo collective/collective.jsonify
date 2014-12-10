@@ -1,14 +1,13 @@
+from wrapper import Wrapper
 import base64
-import sys
 import pprint
+import sys
 import traceback
 
 try:
     import simplejson as json
 except:
     import json
-
-from wrapper import Wrapper
 
 
 def _clean_dict(dct, error):
@@ -39,13 +38,14 @@ def get_item(self):
         except Exception, error:
             if "serializable" in str(error):
                 key, context_dict = _clean_dict(context_dict, error)
-                pprint.pprint('Not serializable member %s of %s ignored'
-                     % (key, repr(self)))
+                pprint.pprint(
+                    'Not serializable member %s of %s ignored' % (
+                        key, repr(self)
+                    )
+                )
                 passed = False
             else:
-                return ('ERROR: Unknown error serializing object: %s' %
-                    str(error))
-
+                return ('ERROR: Unknown error serializing object: %s' % error)
     return JSON
 
 

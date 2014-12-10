@@ -5,7 +5,7 @@ version = '0.3.dev0'
 setup(
     name='collective.jsonify',
     version=version,
-    description="provide json representation for content in Plone 2.0, 2.1, 2.5 and above",
+    description="JSON representation for content in Plone from 2.0 and above",
     long_description=open("README.rst").read(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -15,7 +15,7 @@ setup(
         "Programming Language :: Python :: 2.4",
         "Programming Language :: Python :: 2.6",
         "Programming Language :: Python :: 2.7",
-        ],
+    ],
     keywords='Plone content export json transmogrify',
     author='Rok Garbas',
     author_email='rok@garbas.si',
@@ -28,5 +28,5 @@ setup(
     install_requires=[
         'setuptools',
         'simplejson',
-        ],
-    )
+    ],
+)

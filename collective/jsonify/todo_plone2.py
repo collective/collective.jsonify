@@ -1,8 +1,10 @@
-
-import base64
-
+"""These wrappers get the data in a format that can be used by the
+atschemaupdater blueprint from plone.app.transmogrifier and the atdatafield
+bluprint from this same package.
+"""
 from collective.plone2x_jsonify.base import BaseWrapper
 from collective.plone2x_jsonify.base import DCWrapper
+import base64
 
 
 class DocumentWrapper(DCWrapper):
@@ -82,7 +84,8 @@ class EventWrapper(DCWrapper):
         self['startDate'] = str(self.obj.start_date)
         self['endDate'] = str(self.obj.end_date)
         self['location'] = self.obj.location.decode(self.charset, 'ignore')
-        self['contactName'] = self.obj.contact_name.decode(self.charset, 'ignore')
+        self['contactName'] = self.obj.contact_name.decode(
+            self.charset, 'ignore')
         self['contactEmail'] = self.obj.contact_email
         self['contactPhone'] = self.obj.contact_phone
         self['eventUrl'] = self.obj.event_url

@@ -2,8 +2,8 @@ import os
 
 
 class Wrapper(dict):
-    """ Gets the data in a format that can be used by the
-        transmogrifier blueprints in collective.jsonmigrator
+    """Gets the data in a format that can be used by the transmogrifier
+    blueprints in collective.jsonmigrator.
     """
 
     def __init__(self, context):
@@ -13,11 +13,14 @@ class Wrapper(dict):
 
         self.context = context
         self._context = aq_base(context)
-        self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
+        self.portal = getToolByName(
+            self.context, 'portal_url').getPortalObject()
         self.portal_path = '/'.join(self.portal.getPhysicalPath())
         self.portal_utils = getToolByName(self.context, 'plone_utils')
-        self.charset = self.portal.portal_properties.site_properties.default_charset
-        if not self.charset: # newer seen it missing ... but users can change it
+        self.charset =\
+            self.portal.portal_properties.site_properties.default_charset
+        if not self.charset:
+            # newer seen it missing ... but users can change it
             self.charset = 'utf-8'
 
         for method in dir(self):
@@ -25,7 +28,7 @@ class Wrapper(dict):
                 getattr(self, method)()
 
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
-        """ Sometimes we have to guess charset
+        """Sometimes we have to guess charset
         """
         if type(s) is unicode:
             return s
@@ -37,7 +40,6 @@ class Wrapper(dict):
             except:
                 pass
         return s.decode(test_encodings[0], 'ignore')
-
 
     def get_path(self):
         """ Path of object
@@ -95,14 +97,16 @@ class Wrapper(dict):
                 if typ == 'string':
                     val = self.decode(val)
                 self['_properties'].append(
-                        (pid, val, self.context.getPropertyType(pid)))
+                    (pid, val, self.context.getPropertyType(pid))
+                )
 
     def get_defaultview(self):
         """ Default view of object
             :keys: _layout, _defaultpage
         """
         try:
-            _browser = '/'.join(self.portal_utils.browserDefault(self.context)[1])
+            _browser = '/'.join(
+                self.portal_utils.browserDefault(self.context)[1])
             if _browser not in ['folder_listing', 'index_html']:
                 self['_layout'] = ''
                 self['_defaultpage'] = _browser
@@ -150,13 +154,14 @@ class Wrapper(dict):
                 new_roles = []
                 for role in perm['roles']:
                     if role['checked']:
-                        role_idx = role['name'].index('r')+1
+                        role_idx = role['name'].index('r') + 1
                         role_name = roles[int(role['name'][role_idx:])]
                         new_roles.append(role_name)
                 if unchecked or new_roles:
-                    self['_permissions'][perm['name']] = \
-                         {'acquire': not unchecked,
-                          'roles': new_roles}
+                    self['_permissions'][perm['name']] = {
+                        'acquire': not unchecked,
+                        'roles': new_roles
+                    }
 
     def get_owner(self):
         """ Object owner
@@ -168,9 +173,9 @@ class Wrapper(dict):
                 try:
                     self['_owner'] = self.context.getWrappedOwner().getId()
                 except:
-                    self['_owner'] = self.context.getOwner(info = 1).getId()
+                    self['_owner'] = self.context.getOwner(info=1).getId()
             except:
-                self['_owner'] = self.context.getOwner(info = 1)[1]
+                self['_owner'] = self.context.getOwner(info=1)[1]
         except:
             pass
 
@@ -188,9 +193,11 @@ class Wrapper(dict):
             for w in workflow_history:
                 for i, w2 in enumerate(workflow_history[w]):
                     if 'time' in workflow_history[w][i].keys():
-                        workflow_history[w][i]['time'] = str(workflow_history[w][i]['time'])
+                        workflow_history[w][i]['time'] = str(
+                            workflow_history[w][i]['time'])
                     if 'comments' in workflow_history[w][i].keys():
-                        workflow_history[w][i]['comments'] = self.decode(workflow_history[w][i]['comments'])
+                        workflow_history[w][i]['comments'] =\
+                            self.decode(workflow_history[w][i]['comments'])
             self['_workflow_history'] = workflow_history
 
     def get_position_in_parent(self):
@@ -200,7 +207,8 @@ class Wrapper(dict):
         from Products.CMFPlone.CatalogTool import getObjPositionInParent
         pos = getObjPositionInParent(self.context)
 
-        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
+        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather
+        # than an int
         try:
             from plone.indexer.interfaces import IIndexer
             if IIndexer.providedBy(pos):
@@ -218,33 +226,34 @@ class Wrapper(dict):
         self['_id'] = self.context.getId()
 
     # TODO: this should be only for non archetypes
-    #def get_dublin_core(self):
-    #    # string
-    #    for field in ('title', 'description', 'rights', 'language'):
-    #        val = getattr(self.context, field, False)
-    #        if val:
-    #            self[field] = self.decode(val)
-    #        else:
-    #            self[field] = ''
-    #    # tuple
-    #    for field in ('subject', 'contributors'):
-    #        self[field] = []
-    #        val_tuple = getattr(self.context, field, False)
-    #        if val_tuple:
-    #            for val in val_tuple:
-    #                self[field].append(self.decode(val))
-    #            self[field] = tuple(self[field])
-    #        else:
-    #            self[field] = ()
-    #    # datetime
-    #    #TODO
-    #    for field in ['creation_date', 'modification_date', 'expiration_date',
-    #                  'effective_date', 'expirationDate', 'effectiveDate']:
-    #        val = getattr(self.context, field, False)
-    #        if val:
-    #            self[field] = str(val)
-    #        else:
-    #            self[field] = ''
+    # def get_dublin_core(self):
+    #     # string
+    #     for field in ('title', 'description', 'rights', 'language'):
+    #         val = getattr(self.context, field, False)
+    #         if val:
+    #             self[field] = self.decode(val)
+    #         else:
+    #             self[field] = ''
+    #     # tuple
+    #     for field in ('subject', 'contributors'):
+    #         self[field] = []
+    #         val_tuple = getattr(self.context, field, False)
+    #         if val_tuple:
+    #             for val in val_tuple:
+    #                 self[field].append(self.decode(val))
+    #             self[field] = tuple(self[field])
+    #         else:
+    #             self[field] = ()
+    #     # datetime
+    #     #TODO
+    #     for field in ['creation_date', 'modification_date',
+    #                   'expiration_date', 'effective_date', 'expirationDate',
+    #                   'effectiveDate']:
+    #         val = getattr(self.context, field, False)
+    #         if val:
+    #             self[field] = str(val)
+    #         else:
+    #             self[field] = ''
 
     def get_zopeobject_document_src(self):
         document_src = getattr(self.context, 'document_src', None)
@@ -258,7 +267,7 @@ class Wrapper(dict):
         """
         try:
             from plone.dexterity.utils import iterSchemata
-            #from plone.uuid.interfaces import IUUID
+            # from plone.uuid.interfaces import IUUID
             from zope.schema import getFieldsInOrder
             from datetime import datetime
             from plone.directives import form
@@ -269,12 +278,12 @@ class Wrapper(dict):
         except:
             return
 
-        #get all fields for this obj
+        # get all fields for this obj
         for schemata in iterSchemata(self.context):
             for fieldname, field in getFieldsInOrder(schemata):
                 try:
                     value = field.get(schemata(self.context))
-                    #value = getattr(context, name).__class__.__name__
+                    # value = getattr(context, name).__class__.__name__
                 except AttributeError:
                     continue
                 if value is field.missing_value:
@@ -294,7 +303,8 @@ class Wrapper(dict):
                         data = value.data
 
                     try:
-                        max_filesize = int(os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
+                        max_filesize = int(
+                            os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
                     except ValueError:
                         max_filesize = 20000000
 
@@ -317,7 +327,7 @@ class Wrapper(dict):
                     if isinstance(value, datetime):
                         value = value.date()
 
-                #elif field_type in ('TextLine',):
+                # elif field_type in ('TextLine',):
                 else:
                     BASIC_TYPES = (unicode, int, long, float, bool, type(None))
                     if type(value) in BASIC_TYPES:
@@ -459,10 +469,11 @@ class Wrapper(dict):
 
             elif type_ in ['QueryField']:
                 value = field.getRaw(self.context)
-                self[fieldname] = [dict(q) for q in value] 
+                self[fieldname] = [dict(q) for q in value]
             else:
-                raise TypeError('Unknown field type for ArchetypesWrapper in '
-                        '%s in %s' % (fieldname, self.context.absolute_url()))
+                raise TypeError(
+                    'Unknown field type for ArchetypesWrapper in %s in %s' % (
+                        fieldname, self.context.absolute_url()))
 
     def get_references(self):
         """ AT references
@@ -482,20 +493,23 @@ class Wrapper(dict):
             refs = self.context.getRefs(relationship=rel)
             for ref in refs:
                 if ref is not None:
-                    self['_atrefs'][rel].append('/'.join(ref.getPhysicalPath()))
+                    self['_atrefs'][rel].append(
+                        '/'.join(ref.getPhysicalPath()))
         brelationships = self.context.getBRelationships()
         for brel in brelationships:
             self['_atbrefs'][brel] = []
             brefs = self.context.getBRefs(relationship=brel)
             for bref in brefs:
                 if bref is not None:
-                    self['_atbrefs'][brel].append('/'.join(bref.getPhysicalPath()))
+                    self['_atbrefs'][brel].append(
+                        '/'.join(bref.getPhysicalPath()))
 
     def get_translation(self):
         """ Get LinguaPlone translation linking information.
         """
         if not hasattr(self._context, 'getCanonical'):
             return
-        self['_translationOf'] = '/'.join(self.context.getCanonical(
-                                 ).getPhysicalPath())[len(self.portal_path):]
+        self['_translationOf'] = '/'.join(
+            self.context.getCanonical().getPhysicalPath()
+        )[len(self.portal_path):]
         self['_canonicalTranslation'] = self.context.isCanonical()
