@@ -11,7 +11,7 @@ import sys
 import traceback
 try:
     import simplejson as json
-except:
+except ImportError:
     import json
 
 
