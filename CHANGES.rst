@@ -7,6 +7,15 @@ Changelog
 - PEP 8.
   [thet]
 
+- Fixing local roles export.
+  [realefab]
+
+- Make ATExtensionFields serializable.
+  [jsbueno]
+
+- Fixes exporting of Image types that use ATBlob.
+  [jsbueno]
+
 
 0.2 (2014-08-18)
 ----------------

@@ -6,7 +6,10 @@ setup(
     name='collective.jsonify',
     version=version,
     description="JSON representation for content in Plone from 2.0 and above",
-    long_description=open("README.rst").read(),
+    long_description="%s\n%s" % (
+        open("README.rst").read(),
+        open("CHANGES.rst").read(),
+    ),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Framework :: Plone",
