@@ -122,10 +122,10 @@ class Wrapper(dict):
             :keys: _local_roles
         """
         self['_local_roles'] = {}
-        if getattr(self.context, '__local_roles__', False):
+        if getattr(self.context, '__ac_local_roles__', False):
             for key, val in self.context.__ac_local_roles__.items():
                 if key is not None:
-                    self['_local_roles'][key] = val
+                    self['_ac_local_roles'][key] = val
 
     def get_userdefined_roles(self):
         """ User defined roles for object (via sharing UI)
