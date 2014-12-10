@@ -356,16 +356,32 @@ class Wrapper(dict):
             return
 
         import base64
-        fields = self.context.schema.fields()
+
+        fields = []
+        for schemata in self.context.Schemata().values():
+            fields.extend(schemata.fields())
+
         for field in fields:
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
 
+            if type_[0] == '_' and type_.endswith('ExtensionField'):
+                type_ = type_[1: -len('ExtensionField')] + 'Field'
+
             fieldnames = [
-                'StringField', 'BooleanField', 'LinesField',
-                'IntegerField', 'TextField', 'SimpleDataGridField',
-                'FloatField', 'FixedPointField', 'TALESString',
-                'TALESLines', 'ZPTField', 'DataGridField', 'EmailField',
+                'BooleanField',
+                'DataGridField',
+                'EmailField',
+                'FixedPointField',
+                'FloatField',
+                'IntegerField',
+                'LinesField',
+                'SimpleDataGridField',
+                'StringField',
+                'TALESLines',
+                'TALESString',
+                'TextField',
+                'ZPTField',
             ]
 
             if type_ in fieldnames:
@@ -374,7 +390,7 @@ class Wrapper(dict):
                 except AttributeError:
                     value = self._get_at_field_value(field)
 
-                if callable(value) is True:
+                if callable(value):
                     value = value()
 
                 if value and type_ in ['StringField', 'TextField']:
@@ -406,9 +422,9 @@ class Wrapper(dict):
                 if value:
                     self[unicode(fieldname)] = value
 
-            elif type_ in ['ImageField', 'FileField', 'AttachmentField']:
+            elif type_ in ['ImageField', 'FileField', 'AttachmentField',
+                           'ExtensionBlobField']:
                 fieldname = unicode('_datafield_' + fieldname)
-
                 value = self._get_at_field_value(field)
                 value2 = value
 
