@@ -11,6 +11,8 @@ except:
 
 
 def _clean_dict(dct, error):
+    """Remove dictionary items, which threw an error.
+    """
     new_dict = dct.copy()
     message = str(error)
     for key, value in dct.items():

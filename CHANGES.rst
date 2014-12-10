@@ -4,6 +4,11 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Add export module from ``collective.blueprint.jsonmigrator`` and modify to
+  use collective.jsonify wrapper. Use it in Plone 2.1 by adding it as external
+  method.
+  [thet]
+
 - PEP 8.
   [thet]
 
