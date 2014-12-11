@@ -85,7 +85,71 @@ CLASSNAME_TO_SKIP = [
     'UndoTool',
     'WorkflowTool',
 ]
+
 ID_TO_SKIP = ['Members', ]
+
+PATHS_TO_SKIP = [
+    '/HTTPCache',
+    '/MailHost',
+    '/RAMCache',
+    '/access_rule',
+    '/acl_users',
+    '/archetype_tool',
+    '/caching_policy_manager',
+    '/challenge_hook',
+    '/content_type_registry',
+    '/error_log',
+    '/marshaller_registry',
+    '/mimetypes_registry',
+    '/plone_utils',
+    '/portal_actionicons',
+    '/portal_actions',
+    '/portal_article',
+    '/portal_atct',
+    '/portal_calendar',
+    '/portal_catalog',
+    '/portal_controlpanel',
+    '/portal_css',
+    '/portal_discussion',
+    '/portal_enfold_utilities',
+    '/portal_factory',
+    '/portal_file_templates',
+    '/portal_form_controller',
+    '/portal_fss',
+    '/portal_groupdata',
+    '/portal_groups',
+    '/portal_interface',
+    '/portal_javascripts',
+    '/portal_languages',
+    '/portal_lock_manager',
+    '/portal_memberdata',
+    '/portal_membership',
+    '/portal_metadata',
+    '/portal_migration',
+    '/portal_password_reset',
+    '/portal_placeful_workflow',
+    '/portal_properties',
+    '/portal_quickinstaller',
+    '/portal_registration',
+    '/portal_setup',
+    '/portal_skins',
+    '/portal_squid',
+    '/portal_syndication',
+    '/portal_transforms',
+    '/portal_types',
+    '/portal_uidannotation',
+    '/portal_uidgenerator',
+    '/portal_uidhandler',
+    '/portal_undo',
+    '/portal_url',
+    '/portal_vocabularies',
+    '/portal_workflow',
+    '/property_set_registry',
+    '/reference_catalog',
+    '/translation_service',
+    '/uid_catalog',
+    '/workflow_catalog',
+]
 
 
 def export_content(self):
@@ -116,8 +180,11 @@ def export_content(self):
 def walk(folder):
     for item_id in folder.objectIds():
         item = folder[item_id]
-        if item.__class__.__name__ in CLASSNAME_TO_SKIP or \
-           item.getId() in ID_TO_SKIP:
+
+        path = '/'.join(item.getPhysicalPath())
+        if filter(lambda x: x in path, PATHS_TO_SKIP)\
+                or item.__class__.__name__ in CLASSNAME_TO_SKIP\
+                or item.getId() in ID_TO_SKIP:
             continue
         if item.__class__.__name__ in CLASSNAME_TO_SKIP_LOUD:
             print '>> SKIPPING :: [%s] %s' % (
@@ -136,7 +203,7 @@ def write(items):
 
     for item in items:
 
-        JSON = None
+        json_structure = None
 
         try:
             context_dict = Wrapper(item)
@@ -147,7 +214,8 @@ def write(items):
         passed = False
         while not passed:
             try:
-                JSON = json.dumps(context_dict)
+                # see, if we can serialize to json
+                json_structure = json.dumps(context_dict)  # noqa
                 passed = True
             except Exception, error:
                 if "serializable" in str(error):
@@ -161,10 +229,10 @@ def write(items):
                 else:
                     return (
                         'ERROR: Unknown error serializing object: %s' % error)
-        return JSON
 
-        write_to_jsonfile(JSON)
-        COUNTER += 1
+        if passed:
+            write_to_jsonfile(context_dict)
+            COUNTER += 1
 
 
 def write_to_jsonfile(item):
@@ -176,5 +244,5 @@ def write_to_jsonfile(item):
         os.mkdir(SUB_TMPDIR)
 
     f = open(os.path.join(SUB_TMPDIR, str(COUNTER) + '.json'), 'wb')
-    simplejson.dump(item, f, indent=4)
+    json.dump(item, f, indent=4)
     f.close()
