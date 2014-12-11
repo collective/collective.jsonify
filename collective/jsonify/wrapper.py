@@ -129,7 +129,7 @@ class Wrapper(dict):
         if getattr(self.context, '__ac_local_roles__', False):
             for key, val in self.context.__ac_local_roles__.items():
                 if key is not None:
-                    self['_ac_local_roles'][key] = val
+                    self['_local_roles'][key] = val
 
     def get_userdefined_roles(self):
         """ User defined roles for object (via sharing UI)
