@@ -202,7 +202,17 @@ def export_content(self,
 
     write(walk(self))
 
-    msg = 'SUCCESS :: ' + self.absolute_url()
+    count_sub = 0
+    if BATCH_START is not None:
+        count_sub = BATCH_START
+    msg = 'SUCCESS :: exported %s items from %s' % (
+        COUNTER - count_sub,
+        self.absolute_url()
+    )
+    if BATCH_START is not None:
+        msg = '%s\nstarting from count: %s' % (msg, BATCH_START)
+    if BATCH_SIZE is not None:
+        msg = '%s\nexportung until count: %s' % (msg, BATCH_START + BATCH_SIZE)
     logger.info(msg)
     return msg
 
