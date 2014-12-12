@@ -292,7 +292,7 @@ def write(items):
                     continue
 
         if passed:
-            if BATCH_START and COUNTER <= BATCH_START:
+            if BATCH_START is not None and COUNTER <= BATCH_START:
                 # BATCH FROM
                 COUNTER += 1
                 continue
