@@ -5,10 +5,10 @@ from collective.jsonify.wrapper import Wrapper
 from datetime import datetime
 import logging
 import os
-import pprint
+# import pprint
 import shutil
-import sys
-import traceback
+# import sys
+# import traceback
 try:
     import simplejson as json
 except ImportError:
@@ -18,6 +18,8 @@ logger = logging.getLogger('collective.jsonify export')
 
 
 COUNTER = 1
+BATCH_START = None
+BATCH_SIZE = None
 HOMEDIR = '/tmp'
 TMPDIR = HOMEDIR
 CLASSNAME_TO_SKIP_LOUD = [
@@ -159,14 +161,21 @@ def export_content(self,
                    basedir=HOMEDIR,
                    extra_skip_id=[],
                    extra_skip_classname=[],
-                   extra_skip_paths=[]):
+                   extra_skip_paths=[],
+                   batch_start=None,
+                   batch_size=None):
     global COUNTER
     global TMPDIR
     global ID_TO_SKIP
     global CLASSNAME_TO_SKIP
     global PATHS_TO_SKIP
+    global BATCH_START
+    global BATCH_SIZE
 
     COUNTER = 1
+    BATCH_START = batch_start
+    BATCH_SIZE = batch_size
+
     TODAY = datetime.today()
     TMPDIR = basedir + '/content_' + \
         self.getId() + '_' + TODAY.strftime('%Y-%m-%d-%H-%M-%S')
@@ -221,8 +230,19 @@ def walk(folder):
 
 def write(items):
     global COUNTER
+    """
+    Batching example table:
+        b_start = 0, b_size = 1000, counter = 1000: writes
+        b_start = 1000, b_size = 1000, counter = 1000: breaks
+        b_start = 1000, b_size = 1000, counter = 1001: writes
+    """
 
     for item in items:
+        if BATCH_START is not None and BATCH_SIZE is not None\
+                and COUNTER > BATCH_START + BATCH_SIZE:
+            # BATCH UNTIL
+            break
+
         ppath = '/'.join(item.getPhysicalPath())
 
         json_structure = None
@@ -262,6 +282,10 @@ def write(items):
                     continue
 
         if passed:
+            if BATCH_START and COUNTER <= BATCH_START:
+                # BATCH FROM
+                COUNTER += 1
+                continue
             write_to_jsonfile(context_dict)
             logger.info('exported %s to %s' % (
                 ppath,
