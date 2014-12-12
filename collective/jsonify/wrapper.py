@@ -486,6 +486,28 @@ class Wrapper(dict):
             elif type_ in ['QueryField']:
                 value = field.getRaw(self.context)
                 self[fieldname] = [dict(q) for q in value]
+
+            elif type_ in ['RecordsField', 'RecordsField',
+                           'FormattableNamesField', 'FormattableNameField']:
+                # ATExtensions fields
+                # convert items to real dicts
+                # value = [dict(it) for it in field.get(self.context)]
+
+                def _enc(val):
+                    if type(val) in (unicode, str):
+                        val = self.decode(val)
+                    return val
+
+                value = []
+                for it in field.get(self.context):
+                    it = dict(it)
+                    val_ = {}
+                    for k_, v_ in it.items():
+                        val_[_enc(k_)] = _enc(v_)
+                    value.append(val_)
+
+                self[unicode(fieldname)] = value
+
             else:
                 raise TypeError(
                     'Unknown field type for ArchetypesWrapper in %s in %s' % (
