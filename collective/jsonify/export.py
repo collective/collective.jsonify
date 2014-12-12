@@ -3,16 +3,18 @@
 from collective.jsonify.methods import _clean_dict
 from collective.jsonify.wrapper import Wrapper
 from datetime import datetime
+import logging
 import os
 import pprint
 import shutil
-import simplejson
 import sys
 import traceback
 try:
     import simplejson as json
 except ImportError:
     import json
+
+logger = logging.getLogger('collective.jsonify export')
 
 
 COUNTER = 1
@@ -99,6 +101,7 @@ PATHS_TO_SKIP = [
     '/challenge_hook',
     '/content_type_registry',
     '/error_log',
+    '/Plone/kupu_library_tool',
     '/marshaller_registry',
     '/mimetypes_registry',
     '/plone_utils',
@@ -152,19 +155,36 @@ PATHS_TO_SKIP = [
 ]
 
 
-def export_content(self):
+def export_content(self,
+                   basedir=HOMEDIR,
+                   extra_skip_id=[],
+                   extra_skip_classname=[],
+                   extra_skip_paths=[]):
     global COUNTER
     global TMPDIR
     global ID_TO_SKIP
+    global CLASSNAME_TO_SKIP
+    global PATHS_TO_SKIP
 
     COUNTER = 1
     TODAY = datetime.today()
-    TMPDIR = HOMEDIR + '/content_' + \
+    TMPDIR = basedir + '/content_' + \
         self.getId() + '_' + TODAY.strftime('%Y-%m-%d-%H-%M-%S')
 
+    ID_TO_SKIP += list(extra_skip_id)
     id_to_skip = self.REQUEST.get('id_to_skip', None)
     if id_to_skip is not None:
         ID_TO_SKIP += id_to_skip.split(',')
+
+    CLASSNAME_TO_SKIP += list(extra_skip_classname)
+    classname_to_skip = self.REQUEST.get('classname_to_skip', None)
+    if classname_to_skip is not None:
+        CLASSNAME_TO_SKIP += classname_to_skip(',')
+
+    PATHS_TO_SKIP += list(extra_skip_paths)
+    paths_to_skip = self.REQUEST.get('paths_to_skip', None)
+    if paths_to_skip is not None:
+        PATHS_TO_SKIP += paths_to_skip(',')
 
     if os.path.isdir(TMPDIR):
         shutil.rmtree(TMPDIR)
@@ -173,8 +193,9 @@ def export_content(self):
 
     write(walk(self))
 
-    # TODO: we should return something more useful
-    return 'SUCCESS :: ' + self.absolute_url() + '\n'
+    msg = 'SUCCESS :: ' + self.absolute_url()
+    logger.info(msg)
+    return msg
 
 
 def walk(folder):
@@ -187,10 +208,10 @@ def walk(folder):
                 or item.getId() in ID_TO_SKIP:
             continue
         if item.__class__.__name__ in CLASSNAME_TO_SKIP_LOUD:
-            print '>> SKIPPING :: [%s] %s' % (
+            logger.warn('>> SKIPPING :: [%s] %s' % (
                 item.__class__.__name__,
                 item.absolute_url()
-            )
+            ))
             continue
         yield item
         if getattr(item, 'objectIds', None) and item.objectIds():
@@ -202,14 +223,17 @@ def write(items):
     global COUNTER
 
     for item in items:
+        ppath = '/'.join(item.getPhysicalPath())
 
         json_structure = None
 
         try:
             context_dict = Wrapper(item)
         except Exception, e:
-            tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
-            return 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
+            # tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
+            # msg = 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
+            logger.warn('exception wrapping object %s. Error: %s' % (ppath, e))
+            continue
 
         passed = False
         while not passed:
@@ -220,18 +244,33 @@ def write(items):
             except Exception, error:
                 if "serializable" in str(error):
                     key, context_dict = _clean_dict(context_dict, error)
-                    pprint.pprint(
-                        'Not serializable member %s of %s ignored' % (
-                            key, repr(item)
+                    logger.warn(
+                        'Not serializable member %s of %s ignored. (%s)' % (
+                            key,
+                            repr(item),
+                            ppath
                         )
                     )
                     passed = False
                 else:
-                    return (
-                        'ERROR: Unknown error serializing object: %s' % error)
+                    logger.warn(
+                        'ERROR: Unknown error serializing object %s: %s' % (
+                            ppath,
+                            error
+                        )
+                    )
+                    continue
 
         if passed:
             write_to_jsonfile(context_dict)
+            logger.info('exported %s to %s' % (
+                ppath,
+                os.path.join(
+                    TMPDIR,
+                    str(COUNTER / 1000),
+                    str(COUNTER) + '.json'
+                )
+            ))
             COUNTER += 1
 
 
