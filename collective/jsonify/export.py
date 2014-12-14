@@ -20,8 +20,7 @@ logger = logging.getLogger('collective.jsonify export')
 COUNTER = 1
 BATCH_START = None
 BATCH_SIZE = None
-BATCH_START_COUNTER = None
-BATCH_START_PATH = None
+BATCH_PREVIOUS_PATH = None
 HOMEDIR = '/tmp'
 TMPDIR = HOMEDIR
 CLASSNAME_TO_SKIP_LOUD = [
@@ -166,8 +165,7 @@ def export_content(self,
                    extra_skip_paths=[],
                    batch_start=None,
                    batch_size=None,
-                   batch_start_counter=None,
-                   batch_start_path=None):
+                   batch_previous_path=None):
     global COUNTER
     global TMPDIR
     global ID_TO_SKIP
@@ -175,14 +173,12 @@ def export_content(self,
     global PATHS_TO_SKIP
     global BATCH_START
     global BATCH_SIZE
-    global BATCH_START_COUNTER
-    global BATCH_START_PATH
+    global BATCH_PREVIOUS_PATH
 
     COUNTER = 1
     BATCH_START = batch_start
     BATCH_SIZE = batch_size
-    BATCH_START_COUNTER = batch_start_counter
-    BATCH_START_PATH = batch_start_path
+    BATCH_PREVIOUS_PATH = batch_previous_path
 
     TODAY = datetime.today()
     TMPDIR = basedir + '/content_' + \
@@ -263,23 +259,19 @@ def write(items):
 
         ppath = '/'.join(item.getPhysicalPath())
 
-        if BATCH_START_COUNTER is not None\
-                and BATCH_START_PATH is not None\
+        if BATCH_PREVIOUS_PATH is not None\
                 and BATCH_START is not None:
             # MEMORY SAVING BATCHING
-            if BATCH_START_PATH == ppath:
-                # BATCH_START_PATH is the path of the last item, which was
-                # successfully exported in a previous batch. Likewise,
-                # BATCH_START_COUNTER is the counting state of the last item,
-                # which was successfully exported in a previous batch. We set
-                # COUNTER to the next one and continue then.
-                COUNTER = BATCH_START_COUNTER + 1
-                # Reset BATCH_START_COUNTER and BATCH_START_PATH, so that we
-                # don't execute this conditional branch again.
-                global BATCH_START_COUNTER
-                global BATCH_START_PATH
-                BATCH_START_COUNTER = None
-                BATCH_START_PATH = None
+            if BATCH_PREVIOUS_PATH == ppath:
+                # BATCH_PREVIOUS_PATH is the path of the last item, which was
+                # successfully exported in a previous batch. BATCH_START is the
+                # counting state from where the new batch begins. We set
+                # COUNTER to this state here:
+                COUNTER = BATCH_START
+                # Reset BATCH_PREVIOUS_PATH, so we don't visit this conditional
+                # branch again.
+                global BATCH_PREVIOUS_PATH
+                BATCH_PREVIOUS_PATH = None
             continue  # Always continue in this conditional branch.
 
         json_structure = None
