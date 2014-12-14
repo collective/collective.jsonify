@@ -252,8 +252,9 @@ def write(items):
     """
 
     for item in items:
-        if BATCH_START is not None and BATCH_SIZE is not None\
-                and COUNTER > BATCH_START + BATCH_SIZE:
+        if BATCH_START is not None\
+                and BATCH_SIZE is not None\
+                and COUNTER >= BATCH_START + BATCH_SIZE:
             # BATCH UNTIL
             break
 
@@ -311,7 +312,7 @@ def write(items):
                     continue
 
         if passed:
-            if BATCH_START is not None and COUNTER <= BATCH_START:
+            if BATCH_START is not None and COUNTER < BATCH_START:
                 # BATCH FROM
                 COUNTER += 1
                 continue
