@@ -215,9 +215,8 @@ def export_content(self,
     )
     if BATCH_START is not None:
         msg = '%s\nstarting from count: %s' % (msg, BATCH_START)
-    if BATCH_SIZE is not None:
         msg = '%s\nexportung until count: %s' % (
-            msg, BATCH_START + BATCH_SIZE - 1)
+            msg, BATCH_START + COUNTER - 1)
     logger.info(msg)
     return msg
 
