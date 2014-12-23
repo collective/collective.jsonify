@@ -318,7 +318,9 @@ class Wrapper(dict):
                         'data': base64.b64encode(data),
                         'size': size,
                         'filename': value.filename or '',
-                        'content_type': ctype}
+                        'content_type': ctype,
+                        'encoding': 'base64'
+                    }
                     value = dvalue
 
                 elif field_type in ('DateTime',):
@@ -474,7 +476,8 @@ class Wrapper(dict):
                         'data': value,
                         'size': size,
                         'filename': fname or '',
-                        'content_type': ctype
+                        'content_type': ctype,
+                        'encoding': 'base64'
                     }
 
             elif type_ in ['ReferenceField']:
