@@ -4,6 +4,9 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Add example buildouts for Plone 2.1, 2.5, 3 and 4.
+  [thet]
+
 - Declare ``base64`` encoding for _datafield_FIELDNAME structures. This is used
   to correctly decode in transmogrify.dexterity.
   [thet]
