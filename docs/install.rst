@@ -89,7 +89,7 @@ external method::
             extra_skip_classname=['ATTopic'],
             batch_start=5000,
             batch_size=5000,
-            batch_previous_path='/Plone/last/exported/path'  # saves more memory because no item has to be jsonified before continuing...
+            batch_previous_path='/Plone/last/exported/path'  # optional, but saves more memory because no item has to be jsonified before continuing...
         )
 
 To start the export, just open the url in your browser::
