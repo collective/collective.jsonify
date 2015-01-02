@@ -8,6 +8,8 @@
 /collective.jsonify.egg-info/
 /develop-eggs/
 /docs/_build/
+/docs/html/
+/docs/doctrees/
 /fake-eggs/
 /include/
 /lib/

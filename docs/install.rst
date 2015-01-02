@@ -65,6 +65,38 @@ string. Here's an example of doing this with curl::
     curl --data catalog_query=$(echo '{"Type": "Slide"}' | base64 -w0) \
       'http://localhost:8080/Plone/portal_catalog/get_catalog_results
 
+
+Using the exporter
+==================
+
+Instead of doing on-the-fly exporting with collective.jsonmigrator, you can
+also export your site's content to json files for multiple re-use. This is done
+by the export script and the external method, as described above. You can also
+batch-export the contents, if you get out of memory on your exporting machine.
+Here is an example on how to configure the export script for using as an 
+external method::
+
+    from collective.jsonify import get_item
+    from collective.jsonify import get_children
+    from collective.jsonify import get_catalog_results
+    from collective.jsonify.export import export_content as export_content_orig
+
+
+    def export_content(self):
+        return export_content_orig(
+            self,
+            basedir='/tmp',  # export directory
+            extra_skip_classname=['ATTopic'],
+            batch_start=5000,
+            batch_size=5000,
+            batch_previous_path='/Plone/last/exported/path'  # saves more memory because no item has to be jsonified before continuing...
+        )
+
+To start the export, just open the url in your browser::
+    
+    http://localhost:8080/Plone/export_content
+
+
 How to extend it
 ================
 
