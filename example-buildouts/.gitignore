@@ -1,0 +1,8 @@
+.installed.cfg
+bin/
+develop-eggs/
+dist/
+downloads/
+fake-eggs/
+parts/
+var/
