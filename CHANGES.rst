@@ -4,6 +4,15 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Declare ``base64`` encoding for _datafield_FIELDNAME structures. This is used
+  to correctly decode in transmogrify.dexterity.
+  [thet]
+
+- Add export module from ``collective.blueprint.jsonmigrator`` and modify to
+  use collective.jsonify wrapper. Use it in Plone 2.1 by adding it as external
+  method.
+  [thet]
+
 - PEP 8.
   [thet]
 

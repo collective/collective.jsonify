@@ -10,6 +10,8 @@ The exported JSON_ is a collective.transmogrifier_ friendly format. Install
 transmogrifier pipeline on the site you're importing to, using the blueprints in
 the collective.jsonmigrator_ package.
 
+Alternatively use the provided export script by adding it to 
+
 For more information see the documentation_.
 
 

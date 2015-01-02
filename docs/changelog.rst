@@ -1,1 +1,1 @@
-../CHANGELOG.rst
+../CHANGES.rst

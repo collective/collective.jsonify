@@ -85,7 +85,7 @@ class JsonifyView(BrowserView):
                     # it's a relative url to the actual object position
                     url_to_add = obj.aq_parent.aq_inner.absolute_url() + '/'
                 searchstring = searchstring[:position] +\
-                        lookfor + url_to_add + searchstring[poslookfor:]
+                    lookfor + url_to_add + searchstring[poslookfor:]
                 position = poslookfor + 4
             else:
                 position = poslookfor
@@ -122,5 +122,5 @@ class JsonifyView(BrowserView):
             JSON = json.dumps(objs)
             self.request.response.setHeader("Content-type", "application/json")
             return JSON
-        except Exception as e:
+        except Exception, e:
             return 'ERROR: wrapped object is not serializable: %s' % str(e)

@@ -10,7 +10,8 @@ this does not really matter. You could:
 3. Use buildout. Add it under the ``eggs`` option for the instance you want to
    migrate from.
 
-Next, create a script in the Extensions folder with the following content::
+Next, create a script (e.g. ``json_methods``) in the Extensions folder with the
+following content::
 
     from collective.jsonify import get_item
     from collective.jsonify import get_children
@@ -18,9 +19,21 @@ Next, create a script in the Extensions folder with the following content::
 
 Then run your Zope instance, go to the Zope root and create 3 External Methods:
 
- - get_item ()
- - get_children ()
- - get_catalog_results ()
+ - get_item (id: get_item, module name: json_methods, function name: get_item)
+ - get_children (id: get_children, module name: json_methods, function name:
+                get_children)
+ - get_catalog_results (id: get_catalog_results, module name: json_methods,
+                        function name: get_catalog_results)
+
+If you want to use the JSON to file exporter, also add the exporter script to
+the external method::
+
+    from collective.jsonify.export import export_content
+
+And the External Method:
+
+ - export_content (id: export_content, module name: json_methods,
+                   function name: export_content)
 
 It's true that External Methods are not the nicest to work with and using them
 makes the setup a little long. But the nice thing about External Methods is that
@@ -51,6 +64,38 @@ string. Here's an example of doing this with curl::
 
     curl --data catalog_query=$(echo '{"Type": "Slide"}' | base64 -w0) \
       'http://localhost:8080/Plone/portal_catalog/get_catalog_results
+
+
+Using the exporter
+==================
+
+Instead of doing on-the-fly exporting with collective.jsonmigrator, you can
+also export your site's content to json files for multiple re-use. This is done
+by the export script and the external method, as described above. You can also
+batch-export the contents, if you get out of memory on your exporting machine.
+Here is an example on how to configure the export script for using as an 
+external method::
+
+    from collective.jsonify import get_item
+    from collective.jsonify import get_children
+    from collective.jsonify import get_catalog_results
+    from collective.jsonify.export import export_content as export_content_orig
+
+
+    def export_content(self):
+        return export_content_orig(
+            self,
+            basedir='/tmp',  # export directory
+            extra_skip_classname=['ATTopic'],
+            batch_start=5000,
+            batch_size=5000,
+            batch_previous_path='/Plone/last/exported/path'  # optional, but saves more memory because no item has to be jsonified before continuing...
+        )
+
+To start the export, just open the url in your browser::
+    
+    http://localhost:8080/Plone/export_content
+
 
 How to extend it
 ================

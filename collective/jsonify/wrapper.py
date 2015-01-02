@@ -123,9 +123,9 @@ class Wrapper(dict):
 
     def get_local_roles(self):
         """ Local roles of object
-            :keys: _local_roles
+            :keys: _ac_local_roles
         """
-        self['_local_roles'] = {}
+        self['_ac_local_roles'] = {}
         if getattr(self.context, '__ac_local_roles__', False):
             for key, val in self.context.__ac_local_roles__.items():
                 if key is not None:
@@ -318,7 +318,9 @@ class Wrapper(dict):
                         'data': base64.b64encode(data),
                         'size': size,
                         'filename': value.filename or '',
-                        'content_type': ctype}
+                        'content_type': ctype,
+                        'encoding': 'base64'
+                    }
                     value = dvalue
 
                 elif field_type in ('DateTime',):
@@ -474,7 +476,8 @@ class Wrapper(dict):
                         'data': value,
                         'size': size,
                         'filename': fname or '',
-                        'content_type': ctype
+                        'content_type': ctype,
+                        'encoding': 'base64'
                     }
 
             elif type_ in ['ReferenceField']:
@@ -486,6 +489,28 @@ class Wrapper(dict):
             elif type_ in ['QueryField']:
                 value = field.getRaw(self.context)
                 self[fieldname] = [dict(q) for q in value]
+
+            elif type_ in ['RecordsField', 'RecordsField',
+                           'FormattableNamesField', 'FormattableNameField']:
+                # ATExtensions fields
+                # convert items to real dicts
+                # value = [dict(it) for it in field.get(self.context)]
+
+                def _enc(val):
+                    if type(val) in (unicode, str):
+                        val = self.decode(val)
+                    return val
+
+                value = []
+                for it in field.get(self.context):
+                    it = dict(it)
+                    val_ = {}
+                    for k_, v_ in it.items():
+                        val_[_enc(k_)] = _enc(v_)
+                    value.append(val_)
+
+                self[unicode(fieldname)] = value
+
             else:
                 raise TypeError(
                     'Unknown field type for ArchetypesWrapper in %s in %s' % (
