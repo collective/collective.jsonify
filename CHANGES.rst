@@ -4,6 +4,10 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Declare the ``content_type`` of a field's value only for ``TextField`` and
+  ``StringField``.
+  [thet]
+
 - Add example buildouts for Plone 2.1, 2.5, 3 and 4.
   [thet]
 

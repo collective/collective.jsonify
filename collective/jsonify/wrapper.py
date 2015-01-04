@@ -292,6 +292,7 @@ class Wrapper(dict):
                 field_type = field.__class__.__name__
 
                 if field_type in ('RichText',):
+                    # TODO: content_type missing
                     value = unicode(value.raw)
 
                 elif field_type in ('NamedImage',):
@@ -412,12 +413,14 @@ class Wrapper(dict):
                             if type(col_value) in (unicode, str):
                                 value[i][col_key] = self.decode(col_value)
 
-                try:
-                    ct = field.getContentType(self.context)
-                except AttributeError:
-                    ct = ''
                 self[unicode(fieldname)] = value
-                self[unicode('_content_type_') + fieldname] = ct
+
+                if value and type_ in ['TextField', 'StringField']:
+                    try:
+                        ct = field.getContentType(self.context)
+                        self[unicode('_content_type_') + fieldname] = ct
+                    except AttributeError:
+                        pass
 
             elif type_ in ['DateTimeField']:
                 value = str(self._get_at_field_value(field))
