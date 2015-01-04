@@ -484,7 +484,11 @@ class Wrapper(dict):
                     }
 
             elif type_ in ['ReferenceField']:
-                pass
+                # If there are references, add the UIDs to the referenced
+                # contents
+                value = field.getRaw(self.context)
+                if value:
+                    self[fieldname] = value
 
             elif type_ in ['ComputedField']:
                 continue

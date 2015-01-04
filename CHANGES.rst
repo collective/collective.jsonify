@@ -4,6 +4,9 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Export a content's references as list of UID values.
+  [thet]
+
 - Declare the ``content_type`` of a field's value only for ``TextField`` and
   ``StringField``.
   [thet]
