@@ -4,6 +4,11 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Allow a ``skip_callback`` function to be passed to the ``export_content``
+  function. It evaluates to ``True``, if the current visited item should be
+  excluded from exporting.
+  [thet]
+
 - Export a content's references as list of UID values.
   [thet]
 

@@ -163,9 +163,51 @@ def export_content(self,
                    extra_skip_id=[],
                    extra_skip_classname=[],
                    extra_skip_paths=[],
+                   skip_callback=None,
                    batch_start=None,
                    batch_size=None,
                    batch_previous_path=None):
+    """Export the contents of a Plone site/context to JSON files.
+
+    :param self: The folderish context, from where the export should start.
+    :type self: Folderish Plone context.
+
+    :param basedir: Directory, in where the export should be written.
+    :type basedir: String
+
+    :param extra_skip_id: List of strings of content id's, which should be
+                          skipped from exporting.
+    :type extra_skip_id: List of strings
+
+    :param extra_skip_classname: List of strings of classnames to skip from
+                                 exporting.
+    :type extra_skip_classname: List of strings
+
+    :param extra_skip_paths: List of strings of paths to skip from exporting.
+    :type extra_skip_paths: List of strings
+
+    :param skip_callback: Additional callback, which evaluates to true, if the
+                          current visited item should be skipped from
+                          exporting. Passed onto the ``walk`` function.
+    :type skip_callback: Function
+
+    :param batch_start: The count number, from which the export should start.
+    :type batch_start: Integer
+
+    :param batch_size: The number of items to export in the current batch.
+    :type batch_size: Integer
+
+    :param batch_previous_path: The last path of the last exported item from
+                                the previous batch. If give, the export
+                                swallows less memory, because we don't need to
+                                jsonify each item in order to see, if it was
+                                included in previous batches.
+    :type batch_previous_path: String
+
+    :returns: A sucess/fail message with number of exported items.
+    :rtype: String
+
+    """
     global COUNTER
     global TMPDIR
     global ID_TO_SKIP
@@ -204,7 +246,7 @@ def export_content(self,
     else:
         os.mkdir(TMPDIR)
 
-    write(walk(self))
+    write(walk(self, skip_callback=skip_callback))
 
     count_sub = 0
     if BATCH_START is not None:
@@ -221,7 +263,21 @@ def export_content(self,
     return msg
 
 
-def walk(folder):
+def walk(folder, skip_callback=lambda item: False):
+    """Walk through all content items within a folder.
+
+    :param folder: The folderish context, which should be walked through.
+    :type folder: Folderish Plone context
+
+    :param skip_callback: Additional callback, which evaluates to true, if the
+                          current visited item should be skipped from
+                          exporting.
+    :type skip_callback: Function
+
+    :returns: Visited content item
+    :rtype: Plone context.
+
+    """
     for item_id in folder.objectIds():
         item = folder[item_id]
 
@@ -236,9 +292,12 @@ def walk(folder):
                 item.absolute_url()
             ))
             continue
+        if skip_callback and skip_callback(item):
+            continue
+
         yield item
         if getattr(item, 'objectIds', None) and item.objectIds():
-            for subitem in walk(item):
+            for subitem in walk(item, skip_callback=skip_callback):
                 yield subitem
 
 
