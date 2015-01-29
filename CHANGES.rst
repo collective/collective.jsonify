@@ -4,6 +4,10 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Don't skip ``ComputedField`` fields, but just export their computed value.
+  Better skip them in your transmogrifier import pipeline.
+  [thet]
+
 - Allow a ``skip_callback`` function to be passed to the ``export_content``
   function. It evaluates to ``True``, if the current visited item should be
   excluded from exporting.

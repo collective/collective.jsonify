@@ -373,6 +373,7 @@ class Wrapper(dict):
 
             fieldnames = [
                 'BooleanField',
+                'ComputedField',
                 'DataGridField',
                 'EmailField',
                 'FixedPointField',
@@ -395,6 +396,10 @@ class Wrapper(dict):
 
                 if callable(value):
                     value = value()
+
+                if value and type_ in ['ComputedField']:
+                    if isinstance(value, str):
+                        value = value.decode('utf-8')
 
                 if value and type_ in ['StringField', 'TextField']:
                     try:
@@ -489,9 +494,6 @@ class Wrapper(dict):
                 value = field.getRaw(self.context)
                 if value:
                     self[fieldname] = value
-
-            elif type_ in ['ComputedField']:
-                continue
 
             elif type_ in ['QueryField']:
                 value = field.getRaw(self.context)
