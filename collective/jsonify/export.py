@@ -303,6 +303,7 @@ def walk(folder, skip_callback=lambda item: False):
 
 def write(items):
     global COUNTER
+    global BATCH_PREVIOUS_PATH
     """
     Batching example table:
         b_start = 0, b_size = 1000, counter = 1000: writes
@@ -330,7 +331,6 @@ def write(items):
                 COUNTER = BATCH_START
                 # Reset BATCH_PREVIOUS_PATH, so we don't visit this conditional
                 # branch again.
-                global BATCH_PREVIOUS_PATH
                 BATCH_PREVIOUS_PATH = None
             continue  # Always continue in this conditional branch.
 
