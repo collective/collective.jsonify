@@ -386,6 +386,11 @@ class Wrapper(dict):
                 'TALESString',
                 'TextField',
                 'ZPTField',
+                'LeadimageCaptionField',  # from collective.contentleadimage
+                'XStringField',   # from bda.plone.shop
+                'XFloatField',    # from bda.plone.shop
+                'XBooleanField',  # from bda.plone.shop
+                'XTextField',     # from bda.plone.shop
             ]
 
             if type_ in fieldnames:
@@ -427,13 +432,22 @@ class Wrapper(dict):
                     except AttributeError:
                         pass
 
-            elif type_ in ['DateTimeField']:
+            elif type_ in [
+                'DateTimeField',
+                'XDateTimeField',  # from bda.plone.shop
+            ]:
                 value = str(self._get_at_field_value(field))
                 if value:
                     self[unicode(fieldname)] = value
 
-            elif type_ in ['ImageField', 'FileField', 'AttachmentField',
-                           'ExtensionBlobField']:
+            elif type_ in [
+                'ImageField',
+                'FileField',
+                'AttachmentField',
+                'ExtensionBlobField',
+                'LeadimageImageField',  # from collective.contentleadimage
+                'LeadimageBlobImageField',  # from collective.contentleadimage
+            ]:
                 fieldname = unicode('_datafield_' + fieldname)
                 value = self._get_at_field_value(field)
                 value2 = value
@@ -488,7 +502,10 @@ class Wrapper(dict):
                         'encoding': 'base64'
                     }
 
-            elif type_ in ['ReferenceField']:
+            elif type_ in [
+                'ReferenceField',
+                'CarouselProviderField',  # from collective.carousel
+            ]:
                 # If there are references, add the UIDs to the referenced
                 # contents
                 value = field.getRaw(self.context)
@@ -499,8 +516,12 @@ class Wrapper(dict):
                 value = field.getRaw(self.context)
                 self[fieldname] = [dict(q) for q in value]
 
-            elif type_ in ['RecordsField', 'RecordsField',
-                           'FormattableNamesField', 'FormattableNameField']:
+            elif type_ in [
+                'RecordsField',  # from Products.ATExtensions
+                'RecordField',
+                'FormattableNamesField',
+                'FormattableNameField'
+            ]:
                 # ATExtensions fields
                 # convert items to real dicts
                 # value = [dict(it) for it in field.get(self.context)]

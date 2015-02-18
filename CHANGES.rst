@@ -4,6 +4,9 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Add more schemaextender Archetype field types from some addons.
+  [thet]
+
 - Add json_methods module to own Extension folder, which makes it automatically
   available and unnecessary to add it to the instance's Extension folder.
   [thet]
