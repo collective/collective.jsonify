@@ -4,6 +4,10 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Add json_methods module to own Extension folder, which makes it automatically
+  available and unnecessary to add it to the instance's Extension folder.
+  [thet]
+
 - Don't skip ``ComputedField`` fields, but just export their computed value.
   Better skip them in your transmogrifier import pipeline.
   [thet]

@@ -1,39 +1,45 @@
 How to install it
 =================
 
-Put ``collective.jsonify`` and ``simplejson`` in your PYTHONPATH. How you do
-this does not really matter. You could:
+Install ``collective.jsonify`` for your Plone site, so that it is available in
+your Plone site's ``PYTHONPATH``, including the ``simplejson`` package. The
+easiest way is to use buildout, as for any other modern Plone project. Other
+options include:
 
 1. Play with PYTHONPATH manually.
 2. Use ``easy_install collective.jsonify`` or ``pip collective.jsonify`` which
    will also pull ``simplejson``.
-3. Use buildout. Add it under the ``eggs`` option for the instance you want to
-   migrate from.
 
-Next, create a script (e.g. ``json_methods``) in the Extensions folder with the
-following content::
 
-    from collective.jsonify import get_item
-    from collective.jsonify import get_children
-    from collective.jsonify import get_catalog_results
+Then run your Zope instance, go to the Zope root and create the necessary
+External Methods.
 
-Then run your Zope instance, go to the Zope root and create 3 External Methods:
+External method for exporting JSON files to the filesystem:
 
- - get_item (id: get_item, module name: json_methods, function name: get_item)
- - get_children (id: get_children, module name: json_methods, function name:
-                get_children)
- - get_catalog_results (id: get_catalog_results, module name: json_methods,
-                        function name: get_catalog_results)
+ - export_content:
+   - id: ``export_content``
+   - module name: ``collective.jsonify.json_methods``
+   - function name: ``export_content``
 
-If you want to use the JSON to file exporter, also add the exporter script to
-the external method::
 
-    from collective.jsonify.export import export_content
+External methods for remote access from the importing Plone instance, using
+``collective.jsonmigrator``:
 
-And the External Method:
+ - get_item
+   - id: ``get_item``
+   - module name: ``collective.jsonify.json_methods``
+   - function name: ``get_item``
 
- - export_content (id: export_content, module name: json_methods,
-                   function name: export_content)
+ - get_children:
+   - id: ``get_children``
+   - module name: ``collective.jsonify.json_methods``
+   - function name: ``get_children``
+
+ - get_catalog_results:
+   - id: ``get_catalog_results``
+   - module name: ``json_methods``
+   - function name: ``get_catalog_results``
+
 
 It's true that External Methods are not the nicest to work with and using them
 makes the setup a little long. But the nice thing about External Methods is that
@@ -76,9 +82,6 @@ batch-export the contents, if you get out of memory on your exporting machine.
 Here is an example on how to configure the export script for using as an 
 external method::
 
-    from collective.jsonify import get_item
-    from collective.jsonify import get_children
-    from collective.jsonify import get_catalog_results
     from collective.jsonify.export import export_content as export_content_orig
 
 
