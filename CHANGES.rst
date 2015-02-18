@@ -4,6 +4,10 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Add ``_directly_provided`` export field for the object's directly provided
+  interfaces.
+  [thet]
+
 - Add more schemaextender Archetype field types from some addons.
   [thet]
 

@@ -100,6 +100,15 @@ class Wrapper(dict):
                     (pid, val, self.context.getPropertyType(pid))
                 )
 
+    def get_directly_provided_interfaces(self):
+        try:
+            from zope.interface import directlyProvidedBy
+        except:
+            return
+        self['_directly_provided'] = [
+            it.__identifier__ for it in directlyProvidedBy(self.context)
+        ]
+
     def get_defaultview(self):
         """ Default view of object
             :keys: _layout, _defaultpage
