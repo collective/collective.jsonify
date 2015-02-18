@@ -380,6 +380,12 @@ class Wrapper(dict):
             if type_[0] == '_' and type_.endswith('ExtensionField'):
                 type_ = type_[1: -len('ExtensionField')] + 'Field'
 
+            string_fieldnames = [
+                'StringField',
+                'TextField',
+                'XStringField',   # from bda.plone.shop
+                'XTextField',     # from bda.plone.shop
+            ]
             fieldnames = [
                 'BooleanField',
                 'ComputedField',
@@ -390,19 +396,17 @@ class Wrapper(dict):
                 'IntegerField',
                 'LinesField',
                 'SimpleDataGridField',
-                'StringField',
                 'TALESLines',
                 'TALESString',
-                'TextField',
                 'ZPTField',
                 'LeadimageCaptionField',  # from collective.contentleadimage
-                'XStringField',   # from bda.plone.shop
                 'XFloatField',    # from bda.plone.shop
                 'XBooleanField',  # from bda.plone.shop
-                'XTextField',     # from bda.plone.shop
+                'XSharedStockBooleanField',  # from bda.plone.ticketshop
+                'XSharedStockFloatField',    # from bda.plone.ticketshop
             ]
 
-            if type_ in fieldnames:
+            if type_ in string_fieldnames + fieldnames:
                 try:
                     value = field.getRaw(self.context)
                 except AttributeError:
@@ -415,7 +419,7 @@ class Wrapper(dict):
                     if isinstance(value, str):
                         value = value.decode('utf-8')
 
-                if value and type_ in ['StringField', 'TextField']:
+                if value and type_ in string_fieldnames:
                     try:
                         value = self.decode(value)
                     except AttributeError:
@@ -434,7 +438,7 @@ class Wrapper(dict):
 
                 self[unicode(fieldname)] = value
 
-                if value and type_ in ['TextField', 'StringField']:
+                if value and type_ in string_fieldnames:
                     try:
                         ct = field.getContentType(self.context)
                         self[unicode('_content_type_') + fieldname] = ct
@@ -444,6 +448,7 @@ class Wrapper(dict):
             elif type_ in [
                 'DateTimeField',
                 'XDateTimeField',  # from bda.plone.shop
+                'XSharedBuyablePeriodDateTimeField',  # from bda.plone.ticketshop  # noqa
             ]:
                 value = str(self._get_at_field_value(field))
                 if value:
