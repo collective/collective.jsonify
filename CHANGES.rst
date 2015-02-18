@@ -4,11 +4,12 @@ Changelog
 0.3 (unreleased)
 ----------------
 
-- Add ``_directly_provided`` export field for the object's directly provided
-  interfaces.
+- Make ``archetypes.schemaextender`` support more generic and handle probably
+  most use cases.
   [thet]
 
-- Add more schemaextender Archetype field types from some addons.
+- Add ``_directly_provided`` export field for the object's directly provided
+  interfaces.
   [thet]
 
 - Add json_methods module to own Extension folder, which makes it automatically

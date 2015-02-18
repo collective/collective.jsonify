@@ -367,6 +367,11 @@ class Wrapper(dict):
         except:
             return
 
+        try:
+            from archetypes.schemaextender.interfaces import IExtensionField
+        except:
+            IExtensionField = None
+
         import base64
 
         fields = []
@@ -377,16 +382,18 @@ class Wrapper(dict):
             fieldname = unicode(field.__name__)
             type_ = field.__class__.__name__
 
-            if type_[0] == '_' and type_.endswith('ExtensionField'):
-                type_ = type_[1: -len('ExtensionField')] + 'Field'
+            try:
+                if IExtensionField.providedBy(field):
+                    # archetypes.schemaextender case:
+                    # Try to get the base class of the schemaexter-field, which
+                    # is not an extension field.
+                    type_ = [
+                        it.__name__ for it in field.__class__.__bases__
+                        if not IExtensionField.implementedBy(it)
+                    ][0]
+            except:
+                pass
 
-            string_fieldnames = [
-                'StringField',
-                'TextField',
-                'StringExtField',  # lineage.themeselection
-                'XStringField',   # from bda.plone.shop
-                'XTextField',     # from bda.plone.shop
-            ]
             fieldnames = [
                 'BooleanField',
                 'ComputedField',
@@ -397,17 +404,14 @@ class Wrapper(dict):
                 'IntegerField',
                 'LinesField',
                 'SimpleDataGridField',
+                'StringField',
                 'TALESLines',
                 'TALESString',
+                'TextField',
                 'ZPTField',
-                'LeadimageCaptionField',  # from collective.contentleadimage
-                'XFloatField',    # from bda.plone.shop
-                'XBooleanField',  # from bda.plone.shop
-                'XSharedStockBooleanField',  # from bda.plone.ticketshop
-                'XSharedStockFloatField',    # from bda.plone.ticketshop
             ]
 
-            if type_ in string_fieldnames + fieldnames:
+            if type_ in fieldnames:
                 try:
                     value = field.getRaw(self.context)
                 except AttributeError:
@@ -420,7 +424,7 @@ class Wrapper(dict):
                     if isinstance(value, str):
                         value = value.decode('utf-8')
 
-                if value and type_ in string_fieldnames:
+                if value and type_ in ['StringField', 'TextField']:
                     try:
                         value = self.decode(value)
                     except AttributeError:
@@ -439,18 +443,14 @@ class Wrapper(dict):
 
                 self[unicode(fieldname)] = value
 
-                if value and type_ in string_fieldnames:
+                if value and type_ in ['StringField', 'TextField']:
                     try:
                         ct = field.getContentType(self.context)
                         self[unicode('_content_type_') + fieldname] = ct
                     except AttributeError:
                         pass
 
-            elif type_ in [
-                'DateTimeField',
-                'XDateTimeField',  # from bda.plone.shop
-                'XSharedBuyablePeriodDateTimeField',  # from bda.plone.ticketshop  # noqa
-            ]:
+            elif type_ in ['DateTimeField', ]:
                 value = str(self._get_at_field_value(field))
                 if value:
                     self[unicode(fieldname)] = value
@@ -460,8 +460,6 @@ class Wrapper(dict):
                 'FileField',
                 'AttachmentField',
                 'ExtensionBlobField',
-                'LeadimageImageField',  # from collective.contentleadimage
-                'LeadimageBlobImageField',  # from collective.contentleadimage
             ]:
                 fieldname = unicode('_datafield_' + fieldname)
                 value = self._get_at_field_value(field)
@@ -519,7 +517,6 @@ class Wrapper(dict):
 
             elif type_ in [
                 'ReferenceField',
-                'CarouselProviderField',  # from collective.carousel
             ]:
                 # If there are references, add the UIDs to the referenced
                 # contents
