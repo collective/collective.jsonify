@@ -383,6 +383,7 @@ class Wrapper(dict):
             string_fieldnames = [
                 'StringField',
                 'TextField',
+                'StringExtField',  # lineage.themeselection
                 'XStringField',   # from bda.plone.shop
                 'XTextField',     # from bda.plone.shop
             ]
