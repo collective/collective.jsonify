@@ -552,8 +552,8 @@ class Wrapper(dict):
 
             else:
                 raise TypeError(
-                    'Unknown field type for ArchetypesWrapper in %s in %s' % (
-                        fieldname, self.context.absolute_url()))
+                    'ArchetypesWrapper: Unknown field %s (type: %s) at %s' % (
+                        fieldname, type_, self.context.absolute_url()))
 
     def get_references(self):
         """ AT references
