@@ -11,8 +11,8 @@ from collective.jsonify.export import export_content as export_content_orig
 def export_content(self):
     return export_content_orig(
         self,
-        basedir='~/',  # base directory for the exported JSON files
-        skip_callback=lambda: False,  # optional callback. Returns True to skip an item.  # noqa
+        basedir='/tmp',  # absolute path to directory for the JSON export
+        skip_callback=lambda item: False,  # optional callback. Returns True to skip an item.  # noqa
         extra_skip_classname=[],  # optional list of classnames to skip
         # batch_start=0,
         # batch_size=5000,
