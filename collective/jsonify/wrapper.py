@@ -2,6 +2,7 @@ import os
 
 
 class Wrapper(dict):
+
     """Gets the data in a format that can be used by the transmogrifier
     blueprints in collective.jsonmigrator.
     """
@@ -14,17 +15,20 @@ class Wrapper(dict):
         self.charset = None
         try:
             from Products.CMFCore.utils import getToolByName
-            self.portal = getToolByName(self.context, 'portal_url').getPortalObject()
+            self.portal = getToolByName(
+                self.context, 'portal_url').getPortalObject()
             self.portal_path = '/'.join(self.portal.getPhysicalPath())
-            self.portal_utils = getToolByName(self.context, 'plone_utils', None)
+            self.portal_utils = getToolByName(
+                self.context, 'plone_utils', None)
             try:
-                self.charset = self.portal.portal_properties.site_properties.default_charset
+                self.charset = self.portal.portal_properties.site_properties.default_charset  # noqa
             except AttributeError:
                 pass
         except ImportError:
             pass
 
-        if not self.charset: # never seen it missing ... but users can change it
+        # never seen it missing ... but users can change it
+        if not self.charset:
             self.charset = 'utf-8'
 
         for method in dir(self):
@@ -34,7 +38,7 @@ class Wrapper(dict):
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
         """Sometimes we have to guess charset
         """
-        if type(s) is unicode:
+        if isinstance(s, unicode):
             return s
         if self.charset:
             test_encodings = (self.charset, ) + encodings
@@ -128,7 +132,9 @@ class Wrapper(dict):
             pass
 
         try:
-            _browser = '/'.join(self.portal_utils.browserDefault(self.context)[1])
+            _browser = '/'.join(
+                self.portal_utils.browserDefault(
+                    self.context)[1])
             if _browser not in ['folder_listing', 'index_html']:
                 self['_layout'] = ''
                 self['_defaultpage'] = _browser
@@ -237,9 +243,10 @@ class Wrapper(dict):
         except ImportError:
             return
 
-        pos = getObjPositionInParent(self.context) 
-        
-        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
+        pos = getObjPositionInParent(self.context)
+
+        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather
+        # than an int
         try:
             from plone.indexer.interfaces import IIndexer
             if IIndexer.providedBy(pos):
@@ -257,7 +264,7 @@ class Wrapper(dict):
         self['_id'] = self.context.getId()
 
     def get_zope_dublin_core(self):
-        """ If CMFCore is used in an old Zope site, then dump the 
+        """ If CMFCore is used in an old Zope site, then dump the
             Dublin Core fields
         """
         try:
@@ -294,8 +301,8 @@ class Wrapper(dict):
                 self[field] = str(val)
             else:
                 self[field] = ''
-        # modification_date: 
-        # bobobase_modification_time seems to have better data than 
+        # modification_date:
+        # bobobase_modification_time seems to have better data than
         # modification_date in Zope 2.6.4 - 2.9.7
         val = self.context.bobobase_modification_time()
         if val:
@@ -303,9 +310,8 @@ class Wrapper(dict):
         else:
             self['modification_date'] = ''
 
-
     def get_zope_cmfcore_fields(self):
-        """ If CMFCore is used in an old Zope site, then dump the fields we know 
+        """ If CMFCore is used in an old Zope site, then dump the fields we know
             about
         """
 
@@ -319,24 +325,36 @@ class Wrapper(dict):
 
         self['_cmfcore_marker'] = 'yes'
 
-        # For Link & Favourite types - field name has changed in Archetypes & Dexterity
+        # For Link & Favourite types - field name has changed in Archetypes &
+        # Dexterity
         if hasattr(self.context, 'remote_url'):
-            self['remoteUrl'] = self.decode(getattr(self.context, 'remote_url'))
+            self['remoteUrl'] = self.decode(
+                getattr(
+                    self.context,
+                    'remote_url'))
 
         # For Document & News items
         if hasattr(self.context, 'text'):
             self['text'] = self.decode(getattr(self.context, 'text'))
         if hasattr(self.context, 'text_format'):
-            self['text_format'] = self.decode(getattr(self.context, 'text_format'))
+            self['text_format'] = self.decode(
+                getattr(
+                    self.context,
+                    'text_format'))
 
         # Found in Document & News items, but not sure if this is necessary
         if hasattr(self.context, 'safety_belt'):
-            self['safety_belt'] = self.decode(getattr(self.context, 'safety_belt'))
+            self['safety_belt'] = self.decode(
+                getattr(
+                    self.context,
+                    'safety_belt'))
 
         # Found in File & Image types, but not sure if this is necessary
         if hasattr(self.context, 'precondition'):
-            self['precondition'] = self.decode(getattr(self.context, 'precondition'))
-
+            self['precondition'] = self.decode(
+                getattr(
+                    self.context,
+                    'precondition'))
 
         data_type = self.context.portal_type
 
@@ -345,13 +363,13 @@ class Wrapper(dict):
             value = self.context
             orig_value = value
 
-            if type(value) is not str:
+            if not isinstance(value, str):
                 try:
                     from base64 import b64encode
                 except:
                     # Legacy version of base64 (eg on Python 2.2)
                     from base64 import encodestring as b64encode
-                if type(value.data) is str:
+                if isinstance(value.data, str):
                     value = b64encode(value.data)
                 else:
                     data = value.data
@@ -362,7 +380,10 @@ class Wrapper(dict):
                     value = b64encode(value)
 
             try:
-                max_filesize = int(os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
+                max_filesize = int(
+                    os.environ.get(
+                        'JSONIFY_MAX_FILESIZE',
+                        20000000))
             except ValueError:
                 max_filesize = 20000000
 
@@ -374,9 +395,9 @@ class Wrapper(dict):
                 except AttributeError:
                     # maybe an int?
                     fname = unicode(fname)
-                except Exception, e:
+                except Exception as e:
                     raise Exception('problems with %s: %s' %
-                            (self.context.absolute_url(), str(e)))
+                                    (self.context.absolute_url(), str(e)))
 
                 ctype = orig_value.getContentType()
                 self[fieldname] = {
@@ -391,7 +412,6 @@ class Wrapper(dict):
             self['document_src'] = self.decode(document_src())
         else:
             self['_zopeobject_document_src'] = ''
-
 
     def get_dexterity_fields(self):
         """ If dexterity is used then extract fields
@@ -426,7 +446,12 @@ class Wrapper(dict):
                     # TODO: content_type missing
                     value = unicode(value.raw)
 
-                elif field_type in ('NamedImage','NamedBlobImage','NamedFile','NamedBlobFile'):
+                elif field_type in (
+                    'NamedImage',
+                    'NamedBlobImage',
+                    'NamedFile',
+                    'NamedBlobFile'
+                ):
                     # still to test above with NamedFile & NamedBlobFile
                     fieldname = unicode('_datafield_' + fieldname)
 
@@ -553,7 +578,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         value = unicode(value)
-                    except Exception, e:
+                    except Exception as e:
                         raise Exception('problems with %s: %s' % (
                             self.context.absolute_url(), str(e))
                         )
@@ -589,8 +614,8 @@ class Wrapper(dict):
                 value = self._get_at_field_value(field)
                 value2 = value
 
-                if type(value) is not str:
-                    if type(value.data) is str:
+                if not isinstance(value, str):
+                    if isinstance(value.data, str):
                         value = base64.b64encode(value.data)
                     else:
                         data = value.data
@@ -619,7 +644,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         fname = unicode(fname)
-                    except Exception, e:
+                    except Exception as e:
                         raise Exception(
                             'problems with %s: %s' % (
                                 self.context.absolute_url(), str(e)
@@ -682,7 +707,6 @@ class Wrapper(dict):
                     'ArchetypesWrapper: Unknown field %s (type: %s) at %s' % (
                         fieldname, type_, self.context.absolute_url()))
 
-
     def get_references(self):
         """ AT references
         """
@@ -711,7 +735,6 @@ class Wrapper(dict):
                 if bref is not None:
                     self['_atbrefs'][brel].append(
                         '/'.join(bref.getPhysicalPath()))
-
 
     def get_translation(self):
         """ Get LinguaPlone translation linking information.
