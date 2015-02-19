@@ -4,6 +4,9 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Add ``BlobField`` for ``get_archetypes_fields``.
+  [thet]
+
 - Make ``archetypes.schemaextender`` support more generic and handle probably
   most use cases.
   [thet]

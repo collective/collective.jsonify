@@ -458,6 +458,7 @@ class Wrapper(dict):
             elif type_ in [
                 'ImageField',
                 'FileField',
+                'BlobField',
                 'AttachmentField',
                 'ExtensionBlobField',
             ]:
