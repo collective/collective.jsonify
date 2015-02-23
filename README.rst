@@ -5,7 +5,7 @@ only work with Plone 3.0 or higher (or not even with 3.0).
 ``collective.jsonify``'s only dependency is simplejson_. It can be installed in
 any Plone version as far back as:
 
-- Plone 2.5 (or probably even Plone 2.0, but not tested)
+- Plone 2.1 (or probably even Plone 2.0, but not tested)
 - Zope 2.6.4 (with CMF rather than Plone)
 - Python 2.2
 
