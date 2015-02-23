@@ -66,7 +66,7 @@ class ZPhotoSlidesWrapper(BaseWrapper):
             self['lib'] = self.obj.lib
             self['convert'] = self.obj.convert
             self['use_http_cache'] = self.obj.use_http_cache
-        except Exception as e:
+        except Exception, e:
             raise Exception(
                 'Problems with %s: %s' %
                 (self.obj.absolute_url(), str(e)))

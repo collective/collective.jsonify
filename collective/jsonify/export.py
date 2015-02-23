@@ -1,5 +1,6 @@
 """Add as external method. See install.rst in the documentation.
 """
+from __future__ import generators
 from collective.jsonify.methods import _clean_dict
 from collective.jsonify.wrapper import Wrapper
 from datetime import datetime

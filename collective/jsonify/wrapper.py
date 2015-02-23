@@ -395,7 +395,7 @@ class Wrapper(dict):
                 except AttributeError:
                     # maybe an int?
                     fname = unicode(fname)
-                except Exception as e:
+                except Exception, e:
                     raise Exception('problems with %s: %s' %
                                     (self.context.absolute_url(), str(e)))
 
@@ -578,7 +578,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         value = unicode(value)
-                    except Exception as e:
+                    except Exception, e:
                         raise Exception('problems with %s: %s' % (
                             self.context.absolute_url(), str(e))
                         )
@@ -644,7 +644,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         fname = unicode(fname)
-                    except Exception as e:
+                    except Exception, e:
                         raise Exception(
                             'problems with %s: %s' % (
                                 self.context.absolute_url(), str(e)
