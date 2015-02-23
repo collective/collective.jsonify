@@ -7,6 +7,24 @@ Changelog
 - Add ``BlobField`` for ``get_archetypes_fields``.
   [thet]
 
+- Don't try to convert ints to unicode in get_properties().
+  [djowett]
+
+- Zope 2.6 support for collective.jsonify.
+  [djowett]
+
+- Fix setup.py to work with Python 2.2.
+  [djowett]
+
+- Add error type to tracebacks.
+  [djowett]
+
+- Fix read of NamedBlobImage, NamedFile and NamedBlobFile in dexterity objects.
+  [djowett]
+
+- Fix read of field for unicode transcoding in dexterity objects. 
+  [djowett]
+
 - Make ``archetypes.schemaextender`` support more generic and handle probably
   most use cases.
   [thet]
@@ -65,6 +83,9 @@ Changelog
 
 - Support p.a.collection QueryField.
   [jone]
+
+- Dexterity support.
+  [djowett]
 
 - Add Blob fields support. Use specific methods to retrieve
   filename, content type and size.

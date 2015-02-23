@@ -2,6 +2,7 @@ import os
 
 
 class Wrapper(dict):
+
     """Gets the data in a format that can be used by the transmogrifier
     blueprints in collective.jsonmigrator.
     """
@@ -9,18 +10,25 @@ class Wrapper(dict):
     def __init__(self, context):
 
         from Acquisition import aq_base
-        from Products.CMFCore.utils import getToolByName
-
         self.context = context
         self._context = aq_base(context)
-        self.portal = getToolByName(
-            self.context, 'portal_url').getPortalObject()
-        self.portal_path = '/'.join(self.portal.getPhysicalPath())
-        self.portal_utils = getToolByName(self.context, 'plone_utils')
-        self.charset =\
-            self.portal.portal_properties.site_properties.default_charset
+        self.charset = None
+        try:
+            from Products.CMFCore.utils import getToolByName
+            self.portal = getToolByName(
+                self.context, 'portal_url').getPortalObject()
+            self.portal_path = '/'.join(self.portal.getPhysicalPath())
+            self.portal_utils = getToolByName(
+                self.context, 'plone_utils', None)
+            try:
+                self.charset = self.portal.portal_properties.site_properties.default_charset  # noqa
+            except AttributeError:
+                pass
+        except ImportError:
+            pass
+
+        # never seen it missing ... but users can change it
         if not self.charset:
-            # newer seen it missing ... but users can change it
             self.charset = 'utf-8'
 
         for method in dir(self):
@@ -30,7 +38,7 @@ class Wrapper(dict):
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
         """Sometimes we have to guess charset
         """
-        if type(s) is unicode:
+        if isinstance(s, unicode):
             return s
         if self.charset:
             test_encodings = (self.charset, ) + encodings
@@ -94,7 +102,7 @@ class Wrapper(dict):
             for pid in self.context.propertyIds():
                 val = self.context.getProperty(pid)
                 typ = self.context.getPropertyType(pid)
-                if typ == 'string':
+                if typ == 'string' and isinstance(val, str):
                     val = self.decode(val)
                 self['_properties'].append(
                     (pid, val, self.context.getPropertyType(pid))
@@ -114,21 +122,38 @@ class Wrapper(dict):
             :keys: _layout, _defaultpage
         """
         try:
+            # When migrating Zope folders to Plone folders
+            # set defaultpage to "index_html"
+            from Products.CMFCore.PortalFolder import PortalFolder
+            if isinstance(self.context, PortalFolder):
+                self['_defaultpage'] = 'index_html'
+                return
+        except:
+            pass
+
+        try:
             _browser = '/'.join(
-                self.portal_utils.browserDefault(self.context)[1])
+                self.portal_utils.browserDefault(
+                    self.context)[1])
             if _browser not in ['folder_listing', 'index_html']:
                 self['_layout'] = ''
                 self['_defaultpage'] = _browser
         except AttributeError:
-            _browser = self.context.getLayout()
-            self['_layout'] = _browser
+            try:
+                _browser = self.context.getLayout()
+                self['_layout'] = _browser
+            except:
+                pass
             self['_defaultpage'] = ''
 
     def get_format(self):
         """ Format of object
             :keys: _format
         """
-        self['_content_type'] = self.context.Format()
+        try:
+            self['_content_type'] = self.context.Format()
+        except:
+            pass
 
     def get_local_roles(self):
         """ Local roles of object
@@ -213,7 +238,11 @@ class Wrapper(dict):
         """ Get position in parent
             :keys: _gopip
         """
-        from Products.CMFPlone.CatalogTool import getObjPositionInParent
+        try:
+            from Products.CMFPlone.CatalogTool import getObjPositionInParent
+        except ImportError:
+            return
+
         pos = getObjPositionInParent(self.context)
 
         # After plone 3.3 the above method returns a 'DelegatingIndexer' rather
@@ -234,35 +263,148 @@ class Wrapper(dict):
         """
         self['_id'] = self.context.getId()
 
-    # TODO: this should be only for non archetypes
-    # def get_dublin_core(self):
-    #     # string
-    #     for field in ('title', 'description', 'rights', 'language'):
-    #         val = getattr(self.context, field, False)
-    #         if val:
-    #             self[field] = self.decode(val)
-    #         else:
-    #             self[field] = ''
-    #     # tuple
-    #     for field in ('subject', 'contributors'):
-    #         self[field] = []
-    #         val_tuple = getattr(self.context, field, False)
-    #         if val_tuple:
-    #             for val in val_tuple:
-    #                 self[field].append(self.decode(val))
-    #             self[field] = tuple(self[field])
-    #         else:
-    #             self[field] = ()
-    #     # datetime
-    #     #TODO
-    #     for field in ['creation_date', 'modification_date',
-    #                   'expiration_date', 'effective_date', 'expirationDate',
-    #                   'effectiveDate']:
-    #         val = getattr(self.context, field, False)
-    #         if val:
-    #             self[field] = str(val)
-    #         else:
-    #             self[field] = ''
+    def get_zope_dublin_core(self):
+        """ If CMFCore is used in an old Zope site, then dump the
+            Dublin Core fields
+        """
+        try:
+            from Products.CMFCore.DynamicType import DynamicType
+            # restrict this to non archetypes/dexterity
+            if not isinstance(self.context, DynamicType):
+                # Not a CMFCore type
+                return
+        except:
+            return
+
+        # strings
+        for field in ('title', 'description', 'rights', 'language'):
+            val = getattr(self.context, field, False)
+            if val:
+                self[field] = self.decode(val)
+            else:
+                self[field] = ''
+        # tuples
+        for field in ('subject', 'contributors'):
+            self[field] = []
+            val_tuple = getattr(self.context, field, False)
+            if val_tuple:
+                for val in val_tuple:
+                    self[field].append(self.decode(val))
+                self[field] = tuple(self[field])
+            else:
+                self[field] = ()
+        # datetime fields
+        for field in ['creation_date', 'expiration_date',
+                      'effective_date', 'expirationDate', 'effectiveDate']:
+            val = getattr(self.context, field, False)
+            if val:
+                self[field] = str(val)
+            else:
+                self[field] = ''
+        # modification_date:
+        # bobobase_modification_time seems to have better data than
+        # modification_date in Zope 2.6.4 - 2.9.7
+        val = self.context.bobobase_modification_time()
+        if val:
+            self['modification_date'] = str(val)
+        else:
+            self['modification_date'] = ''
+
+    def get_zope_cmfcore_fields(self):
+        """ If CMFCore is used in an old Zope site, then dump the fields we know
+            about
+        """
+
+        try:
+            from Products.CMFCore.DynamicType import DynamicType
+            if not isinstance(self.context, DynamicType):
+                # Not a CMFCore type
+                return
+        except:
+            return
+
+        self['_cmfcore_marker'] = 'yes'
+
+        # For Link & Favourite types - field name has changed in Archetypes &
+        # Dexterity
+        if hasattr(self.context, 'remote_url'):
+            self['remoteUrl'] = self.decode(
+                getattr(
+                    self.context,
+                    'remote_url'))
+
+        # For Document & News items
+        if hasattr(self.context, 'text'):
+            self['text'] = self.decode(getattr(self.context, 'text'))
+        if hasattr(self.context, 'text_format'):
+            self['text_format'] = self.decode(
+                getattr(
+                    self.context,
+                    'text_format'))
+
+        # Found in Document & News items, but not sure if this is necessary
+        if hasattr(self.context, 'safety_belt'):
+            self['safety_belt'] = self.decode(
+                getattr(
+                    self.context,
+                    'safety_belt'))
+
+        # Found in File & Image types, but not sure if this is necessary
+        if hasattr(self.context, 'precondition'):
+            self['precondition'] = self.decode(
+                getattr(
+                    self.context,
+                    'precondition'))
+
+        data_type = self.context.portal_type
+
+        if data_type in ['File', 'Image']:
+            fieldname = unicode('_datafield_%s' % data_type.lower())
+            value = self.context
+            orig_value = value
+
+            if not isinstance(value, str):
+                try:
+                    from base64 import b64encode
+                except:
+                    # Legacy version of base64 (eg on Python 2.2)
+                    from base64 import encodestring as b64encode
+                if isinstance(value.data, str):
+                    value = b64encode(value.data)
+                else:
+                    data = value.data
+                    value = ''
+                    while data is not None:
+                        value += data.data
+                        data = data.next
+                    value = b64encode(value)
+
+            try:
+                max_filesize = int(
+                    os.environ.get(
+                        'JSONIFY_MAX_FILESIZE',
+                        20000000))
+            except ValueError:
+                max_filesize = 20000000
+
+            if value and len(value) < max_filesize:
+                size = orig_value.getSize()
+                fname = orig_value.getId()
+                try:
+                    fname = self.decode(fname)
+                except AttributeError:
+                    # maybe an int?
+                    fname = unicode(fname)
+                except Exception as e:
+                    raise Exception('problems with %s: %s' %
+                                    (self.context.absolute_url(), str(e)))
+
+                ctype = orig_value.getContentType()
+                self[fieldname] = {
+                    'data': value,
+                    'size': size,
+                    'filename': fname or '',
+                    'content_type': ctype}
 
     def get_zopeobject_document_src(self):
         document_src = getattr(self.context, 'document_src', None)
@@ -304,7 +446,13 @@ class Wrapper(dict):
                     # TODO: content_type missing
                     value = unicode(value.raw)
 
-                elif field_type in ('NamedImage',):
+                elif field_type in (
+                    'NamedImage',
+                    'NamedBlobImage',
+                    'NamedFile',
+                    'NamedBlobFile'
+                ):
+                    # still to test above with NamedFile & NamedBlobFile
                     fieldname = unicode('_datafield_' + fieldname)
 
                     if hasattr(value, 'open'):
@@ -344,7 +492,7 @@ class Wrapper(dict):
                     BASIC_TYPES = (unicode, int, long, float, bool, type(None))
                     if type(value) in BASIC_TYPES:
                         pass
-                    elif self.field is not None:
+                    elif field is not None:
                         value = unicode(value)
                     else:
                         raise ValueError('Unable to serialize field value')
@@ -430,7 +578,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         value = unicode(value)
-                    except Exception, e:
+                    except Exception as e:
                         raise Exception('problems with %s: %s' % (
                             self.context.absolute_url(), str(e))
                         )
@@ -466,8 +614,8 @@ class Wrapper(dict):
                 value = self._get_at_field_value(field)
                 value2 = value
 
-                if type(value) is not str:
-                    if type(value.data) is str:
+                if not isinstance(value, str):
+                    if isinstance(value.data, str):
                         value = base64.b64encode(value.data)
                     else:
                         data = value.data
@@ -496,7 +644,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         fname = unicode(fname)
-                    except Exception, e:
+                    except Exception as e:
                         raise Exception(
                             'problems with %s: %s' % (
                                 self.context.absolute_url(), str(e)
