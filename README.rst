@@ -22,7 +22,7 @@ For more information see the documentation_.
 
 .. _`simplejson`: http://pypi.python.org/simplejson
 .. _`JSON`: http://en.wikipedia.org/wiki/JSON
-.. _`collective.transmogrifier`: http://pypi.python.org/collective.transmogrifier
+.. _`collective.transmogrifier`: http://pypi.python.org/pypi/collective.transmogrifier
 .. _`collective.jsonmigrator`: http://pypi.python.org/pypi/collective.jsonmigrator
 .. _`documentation`: https://collectivejsonify.readthedocs.org
 .. _`Rok Garbas`: http://www.garbas.si/labs/plone-migration
