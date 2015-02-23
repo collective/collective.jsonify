@@ -10,6 +10,9 @@ options include:
 2. Use ``easy_install collective.jsonify`` or ``pip collective.jsonify`` which
    will also pull ``simplejson``.
 
+*Note: if you are working with python 2.2, then you will need to install a `tweaked 
+branch of simplejson <https://github.com/simplejson/simplejson/tree/python2.2>`_.*
+
 
 Then run your Zope instance, go to the Zope root and create the necessary
 External Methods.
