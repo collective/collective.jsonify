@@ -422,7 +422,7 @@ class Wrapper(dict):
             from plone.dexterity.utils import iterSchemata
             # from plone.uuid.interfaces import IUUID
             from zope.schema import getFieldsInOrder
-            from datetime import datetime
+            from datetime import date
             from plone.directives import form
 
             if not form.Schema.providedBy(self.context):
@@ -482,15 +482,15 @@ class Wrapper(dict):
                     }
                     value = dvalue
 
-                elif field_type in ('DateTime',):
-                    if isinstance(value, basestring):
-                        value = datetime.strptime(value, '%Y-%m-%d')
-                    if isinstance(value, datetime):
-                        value = value.date()
+                if isinstance(value, date):
+                    value = value.isoformat()
 
                 # elif field_type in ('TextLine',):
                 else:
-                    BASIC_TYPES = (unicode, int, long, float, bool, type(None))
+                    BASIC_TYPES = (
+                        unicode, int, long, float, bool, type(None),
+                        list, tuple, dict
+                    )
                     if type(value) in BASIC_TYPES:
                         pass
                     elif field is not None:
