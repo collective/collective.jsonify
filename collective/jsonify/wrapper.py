@@ -248,17 +248,36 @@ class Wrapper(dict):
         """
         self['_id'] = self.context.getId()
 
+    def _is_cmf_only_obj(self):
+        """Test, if a content item is a CMF only object.
+        """
+        context = self.context
+        try:
+            from Products.ATContentTypes.interfaces import IATContentType
+            if IATContentType.providedBy(context):
+                return False
+        except:
+            pass
+        try:
+            from plone.dexterity.interfaces import IDexterityContent
+            if IDexterityContent.providedBy(context):
+                return False
+        except:
+            pass
+        try:
+            from Products.CMFCore.DynamicType import DynamicType
+            # restrict this to non archetypes/dexterity
+            if isinstance(context, DynamicType):
+                return True
+        except:
+            pass
+        return False
+
     def get_zope_dublin_core(self):
         """If CMFCore is used in an old Zope site, then dump the
         Dublin Core fields
         """
-        try:
-            from Products.CMFCore.DynamicType import DynamicType
-            # restrict this to non archetypes/dexterity
-            if not isinstance(self.context, DynamicType):
-                # Not a CMFCore type
-                return
-        except:
+        if not self._is_cmf_only_obj():
             return
 
         # strings
@@ -299,12 +318,7 @@ class Wrapper(dict):
         """If CMFCore is used in an old Zope site, then dump the fields we know
         about.
         """
-        try:
-            from Products.CMFCore.DynamicType import DynamicType
-            if not isinstance(self.context, DynamicType):
-                # Not a CMFCore type
-                return
-        except:
+        if not self._is_cmf_only_obj():
             return
 
         self['_cmfcore_marker'] = 'yes'
@@ -393,6 +407,8 @@ class Wrapper(dict):
                 }
 
     def get_zopeobject_document_src(self):
+        if not self._is_cmf_only_obj():
+            return
         document_src = getattr(self.context, 'document_src', None)
         if document_src:
             self['document_src'] = self.decode(document_src())

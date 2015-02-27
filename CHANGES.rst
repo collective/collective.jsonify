@@ -4,6 +4,10 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Check, if wrapper methods for Zope/CMF objects are Zope/CMF only objects by
+  testing for Archetypes and Dexterity first.
+  [thet]
+
 - Add ``BlobField`` for ``get_archetypes_fields``.
   [thet]
 
@@ -22,7 +26,7 @@ Changelog
 - Fix read of NamedBlobImage, NamedFile and NamedBlobFile in dexterity objects.
   [djowett]
 
-- Fix read of field for unicode transcoding in dexterity objects. 
+- Fix read of field for unicode transcoding in dexterity objects.
   [djowett]
 
 - Make ``archetypes.schemaextender`` support more generic and handle probably
