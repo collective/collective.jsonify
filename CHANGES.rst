@@ -4,6 +4,9 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Handle plone.formwidget.geolocation Dexterity field types.
+  [thet]
+
 - Check, if wrapper methods for Zope/CMF objects are Zope/CMF only objects by
   testing for Archetypes and Dexterity first.
   [thet]

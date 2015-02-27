@@ -481,7 +481,13 @@ class Wrapper(dict):
                     }
                     value = dvalue
 
-                if isinstance(value, date):
+                elif field_type == 'GeolocationField':
+                    # super special plone.formwidget.geolocation case
+                    self['latitude'] = getattr(value, 'latitude', 0)
+                    self['longitude'] = getattr(value, 'longitude', 0)
+                    continue
+
+                elif isinstance(value, date):
                     value = value.isoformat()
 
                 # elif field_type in ('TextLine',):
