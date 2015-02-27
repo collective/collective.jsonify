@@ -404,7 +404,9 @@ class Wrapper(dict):
                     'data': value,
                     'size': size,
                     'filename': fname or '',
-                    'content_type': ctype}
+                    'content_type': ctype,
+                    'encoding': 'base64'
+                }
 
     def get_zopeobject_document_src(self):
         document_src = getattr(self.context, 'document_src', None)
