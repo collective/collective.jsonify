@@ -47,374 +47,6 @@ class Wrapper(dict):
                 pass
         return s.decode(test_encodings[0], 'ignore')
 
-    def get_path(self):
-        """Path of object
-        Example::
-            {'_path': '/Plone/first-page'}
-        """
-        self['_path'] = '/'.join(self.context.getPhysicalPath())
-
-    def get_type(self):
-        """Portal type of object
-        Example::
-            {'_type': 'Document'}
-        """
-        try:
-            self['_type'] = self.context.portal_type
-        except AttributeError:
-            pass
-
-    def get_classname(self):
-        """Classname of object.
-        Sometimes in old Plone sites we dont know exactly which type we are
-        using.
-        Example::
-           {'_classname': 'ATDocument'}
-        """
-        self['_classname'] = self.context.__class__.__name__
-
-    def get_uid(self):
-        """Unique ID of object
-        Example::
-            {'_uid': '12jk3h1kj23h123jkh13kj1k23jh1'}
-        """
-        if hasattr(self._context, 'UID'):
-            self['_uid'] = self.context.UID()
-
-    def get_properties(self):
-        """Object properties
-        :keys: _properties
-        """
-        self['_properties'] = []
-        if getattr(self.context, 'propertyIds', False):
-            for pid in self.context.propertyIds():
-                val = self.context.getProperty(pid)
-                typ = self.context.getPropertyType(pid)
-                if typ == 'string' and isinstance(val, str):
-                    val = self.decode(val)
-                self['_properties'].append(
-                    (pid, val, self.context.getPropertyType(pid))
-                )
-
-    def get_directly_provided_interfaces(self):
-        try:
-            from zope.interface import directlyProvidedBy
-        except:
-            return
-        self['_directly_provided'] = [
-            it.__identifier__ for it in directlyProvidedBy(self.context)
-        ]
-
-    def get_defaultview(self):
-        """Default view of object
-        :keys: _layout, _defaultpage
-        """
-        try:
-            # When migrating Zope folders to Plone folders
-            # set defaultpage to "index_html"
-            from Products.CMFCore.PortalFolder import PortalFolder
-            if isinstance(self.context, PortalFolder):
-                self['_defaultpage'] = 'index_html'
-                return
-        except:
-            pass
-
-        try:
-            _browser = '/'.join(
-                self.portal_utils.browserDefault(
-                    self.context)[1])
-            if _browser not in ['folder_listing', 'index_html']:
-                self['_layout'] = ''
-                self['_defaultpage'] = _browser
-        except AttributeError:
-            try:
-                _browser = self.context.getLayout()
-                self['_layout'] = _browser
-            except:
-                pass
-            self['_defaultpage'] = ''
-
-    def get_format(self):
-        """Format of object
-        :keys: _format
-        """
-        try:
-            self['_content_type'] = self.context.Format()
-        except:
-            pass
-
-    def get_local_roles(self):
-        """Local roles of object
-        :keys: _ac_local_roles
-        """
-        self['_ac_local_roles'] = {}
-        if getattr(self.context, '__ac_local_roles__', False):
-            for key, val in self.context.__ac_local_roles__.items():
-                if key is not None:
-                    self['_ac_local_roles'][key] = val
-
-    def get_userdefined_roles(self):
-        """User defined roles for object (via sharing UI)
-        :keys: _userdefined_roles
-        """
-        self['_userdefined_roles'] = ()
-        if getattr(self.context, 'userdefined_roles', False):
-            self['_userdefined_roles'] = self.context.userdefined_roles()
-
-    def get_permissions(self):
-        """Permission of object (Security tab in ZMI)
-        :keys: _permissions
-        """
-        self['_permissions'] = {}
-        if getattr(self.context, 'permission_settings', False):
-            roles = self.context.validRoles()
-            ps = self.context.permission_settings()
-            for perm in ps:
-                unchecked = 0
-                if not perm['acquire']:
-                    unchecked = 1
-                new_roles = []
-                for role in perm['roles']:
-                    if role['checked']:
-                        role_idx = role['name'].index('r') + 1
-                        role_name = roles[int(role['name'][role_idx:])]
-                        new_roles.append(role_name)
-                if unchecked or new_roles:
-                    self['_permissions'][perm['name']] = {
-                        'acquire': not unchecked,
-                        'roles': new_roles
-                    }
-
-    def get_owner(self):
-        """Object owner
-        :keys: _owner
-        """
-        try:
-            try:
-                try:
-                    self['_owner'] = self.context.getWrappedOwner().getId()
-                except:
-                    self['_owner'] = self.context.getOwner(info=1).getId()
-            except:
-                self['_owner'] = self.context.getOwner(info=1)[1]
-        except:
-            pass
-
-    def get_workflowhistory(self):
-        """Workflow history
-        :keys: _workflow_history
-        Example:::
-            lalala
-        """
-        self['_workflow_history'] = {}
-        if getattr(self.context, 'workflow_history', False):
-            workflow_history = self.context.workflow_history.data
-            for w in workflow_history:
-                for i, w2 in enumerate(workflow_history[w]):
-                    if 'time' in workflow_history[w][i].keys():
-                        workflow_history[w][i]['time'] = str(
-                            workflow_history[w][i]['time'])
-                    if 'comments' in workflow_history[w][i].keys():
-                        workflow_history[w][i]['comments'] =\
-                            self.decode(workflow_history[w][i]['comments'])
-            self['_workflow_history'] = workflow_history
-
-    def get_position_in_parent(self):
-        """Get position in parent
-        :keys: _gopip
-        """
-        try:
-            from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        except ImportError:
-            return
-
-        pos = getObjPositionInParent(self.context)
-
-        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather
-        # than an int
-        try:
-            from plone.indexer.interfaces import IIndexer
-            if IIndexer.providedBy(pos):
-                self['_gopip'] = pos()
-                return
-        except ImportError:
-            pass
-
-        self['_gopip'] = pos
-
-    def get_id(self):
-        """Object id
-        :keys: _id
-        """
-        self['_id'] = self.context.getId()
-
-    def _is_cmf_only_obj(self):
-        """Test, if a content item is a CMF only object.
-        """
-        context = self.context
-        try:
-            from Products.ATContentTypes.interfaces import IATContentType
-            if IATContentType.providedBy(context):
-                return False
-        except:
-            pass
-        try:
-            from plone.dexterity.interfaces import IDexterityContent
-            if IDexterityContent.providedBy(context):
-                return False
-        except:
-            pass
-        try:
-            from Products.CMFCore.DynamicType import DynamicType
-            # restrict this to non archetypes/dexterity
-            if isinstance(context, DynamicType):
-                return True
-        except:
-            pass
-        return False
-
-    def get_zope_dublin_core(self):
-        """If CMFCore is used in an old Zope site, then dump the
-        Dublin Core fields
-        """
-        if not self._is_cmf_only_obj():
-            return
-
-        # strings
-        for field in ('title', 'description', 'rights', 'language'):
-            val = getattr(self.context, field, False)
-            if val:
-                self[field] = self.decode(val)
-            else:
-                self[field] = ''
-        # tuples
-        for field in ('subject', 'contributors'):
-            self[field] = []
-            val_tuple = getattr(self.context, field, False)
-            if val_tuple:
-                for val in val_tuple:
-                    self[field].append(self.decode(val))
-                self[field] = tuple(self[field])
-            else:
-                self[field] = ()
-        # datetime fields
-        for field in ['creation_date', 'expiration_date',
-                      'effective_date', 'expirationDate', 'effectiveDate']:
-            val = getattr(self.context, field, False)
-            if val:
-                self[field] = str(val)
-            else:
-                self[field] = ''
-        # modification_date:
-        # bobobase_modification_time seems to have better data than
-        # modification_date in Zope 2.6.4 - 2.9.7
-        val = self.context.bobobase_modification_time()
-        if val:
-            self['modification_date'] = str(val)
-        else:
-            self['modification_date'] = ''
-
-    def get_zope_cmfcore_fields(self):
-        """If CMFCore is used in an old Zope site, then dump the fields we know
-        about.
-        """
-        if not self._is_cmf_only_obj():
-            return
-
-        self['_cmfcore_marker'] = 'yes'
-
-        # For Link & Favourite types - field name has changed in Archetypes &
-        # Dexterity
-        if hasattr(self.context, 'remote_url'):
-            self['remoteUrl'] = self.decode(
-                getattr(
-                    self.context,
-                    'remote_url'))
-
-        # For Document & News items
-        if hasattr(self.context, 'text'):
-            self['text'] = self.decode(getattr(self.context, 'text'))
-        if hasattr(self.context, 'text_format'):
-            self['text_format'] = self.decode(
-                getattr(
-                    self.context,
-                    'text_format'))
-
-        # Found in Document & News items, but not sure if this is necessary
-        if hasattr(self.context, 'safety_belt'):
-            self['safety_belt'] = self.decode(
-                getattr(
-                    self.context,
-                    'safety_belt'))
-
-        # Found in File & Image types, but not sure if this is necessary
-        if hasattr(self.context, 'precondition'):
-            self['precondition'] = self.decode(
-                getattr(
-                    self.context,
-                    'precondition'))
-
-        data_type = self.context.portal_type
-
-        if data_type in ['File', 'Image']:
-            fieldname = unicode('_datafield_%s' % data_type.lower())
-            value = self.context
-            orig_value = value
-
-            if not isinstance(value, str):
-                try:
-                    from base64 import b64encode
-                except:
-                    # Legacy version of base64 (eg on Python 2.2)
-                    from base64 import encodestring as b64encode
-                if isinstance(value.data, str):
-                    value = b64encode(value.data)
-                else:
-                    data = value.data
-                    value = ''
-                    while data is not None:
-                        value += data.data
-                        data = data.next
-                    value = b64encode(value)
-
-            try:
-                max_filesize = int(
-                    os.environ.get(
-                        'JSONIFY_MAX_FILESIZE',
-                        20000000))
-            except ValueError:
-                max_filesize = 20000000
-
-            if value and len(value) < max_filesize:
-                size = orig_value.getSize()
-                fname = orig_value.getId()
-                try:
-                    fname = self.decode(fname)
-                except AttributeError:
-                    # maybe an int?
-                    fname = unicode(fname)
-                except Exception, e:
-                    raise Exception('problems with %s: %s' %
-                                    (self.context.absolute_url(), str(e)))
-
-                ctype = orig_value.getContentType()
-                self[fieldname] = {
-                    'data': value,
-                    'size': size,
-                    'filename': fname or '',
-                    'content_type': ctype,
-                    'encoding': 'base64'
-                }
-
-    def get_zopeobject_document_src(self):
-        if not self._is_cmf_only_obj():
-            return
-        document_src = getattr(self.context, 'document_src', None)
-        if document_src:
-            self['document_src'] = self.decode(document_src())
-        else:
-            self['_zopeobject_document_src'] = ''
-
     def get_dexterity_fields(self):
         """If dexterity is used then extract fields.
         """
@@ -741,6 +373,207 @@ class Wrapper(dict):
                     self['_atbrefs'][brel].append(
                         '/'.join(bref.getPhysicalPath()))
 
+    def get_uid(self):
+        """Unique ID of object
+        Example::
+            {'_uid': '12jk3h1kj23h123jkh13kj1k23jh1'}
+        """
+        if hasattr(self._context, 'UID'):
+            self['_uid'] = self.context.UID()
+
+    def get_id(self):
+        """Object id
+        :keys: _id
+        """
+        self['_id'] = self.context.getId()
+
+    def get_path(self):
+        """Path of object
+        Example::
+            {'_path': '/Plone/first-page'}
+        """
+        self['_path'] = '/'.join(self.context.getPhysicalPath())
+
+    def get_type(self):
+        """Portal type of object
+        Example::
+            {'_type': 'Document'}
+        """
+        try:
+            self['_type'] = self.context.portal_type
+        except AttributeError:
+            pass
+
+    def get_classname(self):
+        """Classname of object.
+        Sometimes in old Plone sites we dont know exactly which type we are
+        using.
+        Example::
+           {'_classname': 'ATDocument'}
+        """
+        self['_classname'] = self.context.__class__.__name__
+
+    def get_properties(self):
+        """Object properties
+        :keys: _properties
+        """
+        self['_properties'] = []
+        if getattr(self.context, 'propertyIds', False):
+            for pid in self.context.propertyIds():
+                val = self.context.getProperty(pid)
+                typ = self.context.getPropertyType(pid)
+                if typ == 'string' and isinstance(val, str):
+                    val = self.decode(val)
+                self['_properties'].append(
+                    (pid, val, self.context.getPropertyType(pid))
+                )
+
+    def get_directly_provided_interfaces(self):
+        try:
+            from zope.interface import directlyProvidedBy
+        except:
+            return
+        self['_directly_provided'] = [
+            it.__identifier__ for it in directlyProvidedBy(self.context)
+        ]
+
+    def get_defaultview(self):
+        """Default view of object
+        :keys: _layout, _defaultpage
+        """
+        try:
+            # When migrating Zope folders to Plone folders
+            # set defaultpage to "index_html"
+            from Products.CMFCore.PortalFolder import PortalFolder
+            if isinstance(self.context, PortalFolder):
+                self['_defaultpage'] = 'index_html'
+                return
+        except:
+            pass
+
+        try:
+            _browser = '/'.join(
+                self.portal_utils.browserDefault(
+                    self.context)[1])
+            if _browser not in ['folder_listing', 'index_html']:
+                self['_layout'] = ''
+                self['_defaultpage'] = _browser
+        except AttributeError:
+            try:
+                _browser = self.context.getLayout()
+                self['_layout'] = _browser
+            except:
+                pass
+            self['_defaultpage'] = ''
+
+    def get_format(self):
+        """Format of object
+        :keys: _format
+        """
+        try:
+            self['_content_type'] = self.context.Format()
+        except:
+            pass
+
+    def get_local_roles(self):
+        """Local roles of object
+        :keys: _ac_local_roles
+        """
+        self['_ac_local_roles'] = {}
+        if getattr(self.context, '__ac_local_roles__', False):
+            for key, val in self.context.__ac_local_roles__.items():
+                if key is not None:
+                    self['_ac_local_roles'][key] = val
+
+    def get_userdefined_roles(self):
+        """User defined roles for object (via sharing UI)
+        :keys: _userdefined_roles
+        """
+        self['_userdefined_roles'] = ()
+        if getattr(self.context, 'userdefined_roles', False):
+            self['_userdefined_roles'] = self.context.userdefined_roles()
+
+    def get_permissions(self):
+        """Permission of object (Security tab in ZMI)
+        :keys: _permissions
+        """
+        self['_permissions'] = {}
+        if getattr(self.context, 'permission_settings', False):
+            roles = self.context.validRoles()
+            ps = self.context.permission_settings()
+            for perm in ps:
+                unchecked = 0
+                if not perm['acquire']:
+                    unchecked = 1
+                new_roles = []
+                for role in perm['roles']:
+                    if role['checked']:
+                        role_idx = role['name'].index('r') + 1
+                        role_name = roles[int(role['name'][role_idx:])]
+                        new_roles.append(role_name)
+                if unchecked or new_roles:
+                    self['_permissions'][perm['name']] = {
+                        'acquire': not unchecked,
+                        'roles': new_roles
+                    }
+
+    def get_owner(self):
+        """Object owner
+        :keys: _owner
+        """
+        try:
+            try:
+                try:
+                    self['_owner'] = self.context.getWrappedOwner().getId()
+                except:
+                    self['_owner'] = self.context.getOwner(info=1).getId()
+            except:
+                self['_owner'] = self.context.getOwner(info=1)[1]
+        except:
+            pass
+
+    def get_workflowhistory(self):
+        """Workflow history
+        :keys: _workflow_history
+        Example:::
+            lalala
+        """
+        self['_workflow_history'] = {}
+        if getattr(self.context, 'workflow_history', False):
+            workflow_history = self.context.workflow_history.data
+            for w in workflow_history:
+                for i, w2 in enumerate(workflow_history[w]):
+                    if 'time' in workflow_history[w][i].keys():
+                        workflow_history[w][i]['time'] = str(
+                            workflow_history[w][i]['time'])
+                    if 'comments' in workflow_history[w][i].keys():
+                        workflow_history[w][i]['comments'] =\
+                            self.decode(workflow_history[w][i]['comments'])
+            self['_workflow_history'] = workflow_history
+
+    def get_position_in_parent(self):
+        """Get position in parent
+        :keys: _gopip
+        """
+        try:
+            from Products.CMFPlone.CatalogTool import getObjPositionInParent
+        except ImportError:
+            return
+
+        pos = getObjPositionInParent(self.context)
+
+        # After plone 3.3 the above method returns a 'DelegatingIndexer' rather
+        # than an int
+        try:
+            from plone.indexer.interfaces import IIndexer
+            if IIndexer.providedBy(pos):
+                self['_gopip'] = pos()
+                return
+        except ImportError:
+            pass
+
+        self['_gopip'] = pos
+
     def get_translation(self):
         """Get LinguaPlone translation linking information.
         """
@@ -750,3 +583,170 @@ class Wrapper(dict):
             self.context.getCanonical().getPhysicalPath()
         )[len(self.portal_path):]
         self['_canonicalTranslation'] = self.context.isCanonical()
+
+    def _is_cmf_only_obj(self):
+        """Test, if a content item is a CMF only object.
+        """
+        context = self.context
+        try:
+            from Products.ATContentTypes.interfaces import IATContentType
+            if IATContentType.providedBy(context):
+                return False
+        except:
+            pass
+        try:
+            from plone.dexterity.interfaces import IDexterityContent
+            if IDexterityContent.providedBy(context):
+                return False
+        except:
+            pass
+        try:
+            from Products.CMFCore.DynamicType import DynamicType
+            # restrict this to non archetypes/dexterity
+            if isinstance(context, DynamicType):
+                return True
+        except:
+            pass
+        return False
+
+    def get_zope_dublin_core(self):
+        """If CMFCore is used in an old Zope site, then dump the
+        Dublin Core fields
+        """
+        if not self._is_cmf_only_obj():
+            return
+
+        # strings
+        for field in ('title', 'description', 'rights', 'language'):
+            val = getattr(self.context, field, False)
+            if val:
+                self[field] = self.decode(val)
+            else:
+                self[field] = ''
+        # tuples
+        for field in ('subject', 'contributors'):
+            self[field] = []
+            val_tuple = getattr(self.context, field, False)
+            if val_tuple:
+                for val in val_tuple:
+                    self[field].append(self.decode(val))
+                self[field] = tuple(self[field])
+            else:
+                self[field] = ()
+        # datetime fields
+        for field in ['creation_date', 'expiration_date',
+                      'effective_date', 'expirationDate', 'effectiveDate']:
+            val = getattr(self.context, field, False)
+            if val:
+                self[field] = str(val)
+            else:
+                self[field] = ''
+        # modification_date:
+        # bobobase_modification_time seems to have better data than
+        # modification_date in Zope 2.6.4 - 2.9.7
+        val = self.context.bobobase_modification_time()
+        if val:
+            self['modification_date'] = str(val)
+        else:
+            self['modification_date'] = ''
+
+    def get_zope_cmfcore_fields(self):
+        """If CMFCore is used in an old Zope site, then dump the fields we know
+        about.
+        """
+        if not self._is_cmf_only_obj():
+            return
+
+        self['_cmfcore_marker'] = 'yes'
+
+        # For Link & Favourite types - field name has changed in Archetypes &
+        # Dexterity
+        if hasattr(self.context, 'remote_url'):
+            self['remoteUrl'] = self.decode(
+                getattr(
+                    self.context,
+                    'remote_url'))
+
+        # For Document & News items
+        if hasattr(self.context, 'text'):
+            self['text'] = self.decode(getattr(self.context, 'text'))
+        if hasattr(self.context, 'text_format'):
+            self['text_format'] = self.decode(
+                getattr(
+                    self.context,
+                    'text_format'))
+
+        # Found in Document & News items, but not sure if this is necessary
+        if hasattr(self.context, 'safety_belt'):
+            self['safety_belt'] = self.decode(
+                getattr(
+                    self.context,
+                    'safety_belt'))
+
+        # Found in File & Image types, but not sure if this is necessary
+        if hasattr(self.context, 'precondition'):
+            self['precondition'] = self.decode(
+                getattr(
+                    self.context,
+                    'precondition'))
+
+        data_type = self.context.portal_type
+
+        if data_type in ['File', 'Image']:
+            fieldname = unicode('_datafield_%s' % data_type.lower())
+            value = self.context
+            orig_value = value
+
+            if not isinstance(value, str):
+                try:
+                    from base64 import b64encode
+                except:
+                    # Legacy version of base64 (eg on Python 2.2)
+                    from base64 import encodestring as b64encode
+                if isinstance(value.data, str):
+                    value = b64encode(value.data)
+                else:
+                    data = value.data
+                    value = ''
+                    while data is not None:
+                        value += data.data
+                        data = data.next
+                    value = b64encode(value)
+
+            try:
+                max_filesize = int(
+                    os.environ.get(
+                        'JSONIFY_MAX_FILESIZE',
+                        20000000))
+            except ValueError:
+                max_filesize = 20000000
+
+            if value and len(value) < max_filesize:
+                size = orig_value.getSize()
+                fname = orig_value.getId()
+                try:
+                    fname = self.decode(fname)
+                except AttributeError:
+                    # maybe an int?
+                    fname = unicode(fname)
+                except Exception, e:
+                    raise Exception('problems with %s: %s' %
+                                    (self.context.absolute_url(), str(e)))
+
+                ctype = orig_value.getContentType()
+                self[fieldname] = {
+                    'data': value,
+                    'size': size,
+                    'filename': fname or '',
+                    'content_type': ctype,
+                    'encoding': 'base64'
+                }
+
+    def get_zopeobject_document_src(self):
+        if not self._is_cmf_only_obj():
+            return
+        document_src = getattr(self.context, 'document_src', None)
+        if document_src:
+            self['document_src'] = self.decode(document_src())
+        else:
+            self['_zopeobject_document_src'] = ''
