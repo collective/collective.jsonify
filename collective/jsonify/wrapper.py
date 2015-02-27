@@ -2,13 +2,11 @@ import os
 
 
 class Wrapper(dict):
-
     """Gets the data in a format that can be used by the transmogrifier
     blueprints in collective.jsonmigrator.
     """
 
     def __init__(self, context):
-
         from Acquisition import aq_base
         self.context = context
         self._context = aq_base(context)
@@ -50,20 +48,16 @@ class Wrapper(dict):
         return s.decode(test_encodings[0], 'ignore')
 
     def get_path(self):
-        """ Path of object
-
-            Example::
-
-                {'_path': '/Plone/first-page'}
-
+        """Path of object
+        Example::
+            {'_path': '/Plone/first-page'}
         """
         self['_path'] = '/'.join(self.context.getPhysicalPath())
 
     def get_type(self):
-        """ Portal type of object
-
-            Example::
-                {'_type': 'Document'}
+        """Portal type of object
+        Example::
+            {'_type': 'Document'}
         """
         try:
             self['_type'] = self.context.portal_type
@@ -71,31 +65,25 @@ class Wrapper(dict):
             pass
 
     def get_classname(self):
-        """ Classname of object.
-
-            Sometimes in old Plone sites we dont know exactly which type we are
-            using.
-
-            Example::
-
-                {'_classname': 'ATDocument'}
-
+        """Classname of object.
+        Sometimes in old Plone sites we dont know exactly which type we are
+        using.
+        Example::
+           {'_classname': 'ATDocument'}
         """
         self['_classname'] = self.context.__class__.__name__
 
     def get_uid(self):
-        """ Unique ID of object
-
-            Example::
-
-                {'_uid': '12jk3h1kj23h123jkh13kj1k23jh1'}
+        """Unique ID of object
+        Example::
+            {'_uid': '12jk3h1kj23h123jkh13kj1k23jh1'}
         """
         if hasattr(self._context, 'UID'):
             self['_uid'] = self.context.UID()
 
     def get_properties(self):
-        """ Object properties
-            :keys: _properties
+        """Object properties
+        :keys: _properties
         """
         self['_properties'] = []
         if getattr(self.context, 'propertyIds', False):
@@ -118,8 +106,8 @@ class Wrapper(dict):
         ]
 
     def get_defaultview(self):
-        """ Default view of object
-            :keys: _layout, _defaultpage
+        """Default view of object
+        :keys: _layout, _defaultpage
         """
         try:
             # When migrating Zope folders to Plone folders
@@ -147,8 +135,8 @@ class Wrapper(dict):
             self['_defaultpage'] = ''
 
     def get_format(self):
-        """ Format of object
-            :keys: _format
+        """Format of object
+        :keys: _format
         """
         try:
             self['_content_type'] = self.context.Format()
@@ -156,8 +144,8 @@ class Wrapper(dict):
             pass
 
     def get_local_roles(self):
-        """ Local roles of object
-            :keys: _ac_local_roles
+        """Local roles of object
+        :keys: _ac_local_roles
         """
         self['_ac_local_roles'] = {}
         if getattr(self.context, '__ac_local_roles__', False):
@@ -166,16 +154,16 @@ class Wrapper(dict):
                     self['_ac_local_roles'][key] = val
 
     def get_userdefined_roles(self):
-        """ User defined roles for object (via sharing UI)
-            :keys: _userdefined_roles
+        """User defined roles for object (via sharing UI)
+        :keys: _userdefined_roles
         """
         self['_userdefined_roles'] = ()
         if getattr(self.context, 'userdefined_roles', False):
             self['_userdefined_roles'] = self.context.userdefined_roles()
 
     def get_permissions(self):
-        """ Permission of object (Security tab in ZMI)
-            :keys: _permissions
+        """Permission of object (Security tab in ZMI)
+        :keys: _permissions
         """
         self['_permissions'] = {}
         if getattr(self.context, 'permission_settings', False):
@@ -198,10 +186,9 @@ class Wrapper(dict):
                     }
 
     def get_owner(self):
-        """ Object owner
-            :keys: _owner
+        """Object owner
+        :keys: _owner
         """
-
         try:
             try:
                 try:
@@ -214,12 +201,10 @@ class Wrapper(dict):
             pass
 
     def get_workflowhistory(self):
-        """ Workflow history
-            :keys: _workflow_history
-
-            Example:::
-
-                lalala
+        """Workflow history
+        :keys: _workflow_history
+        Example:::
+            lalala
         """
         self['_workflow_history'] = {}
         if getattr(self.context, 'workflow_history', False):
@@ -235,8 +220,8 @@ class Wrapper(dict):
             self['_workflow_history'] = workflow_history
 
     def get_position_in_parent(self):
-        """ Get position in parent
-            :keys: _gopip
+        """Get position in parent
+        :keys: _gopip
         """
         try:
             from Products.CMFPlone.CatalogTool import getObjPositionInParent
@@ -258,14 +243,14 @@ class Wrapper(dict):
         self['_gopip'] = pos
 
     def get_id(self):
-        """ Object id
-            :keys: _id
+        """Object id
+        :keys: _id
         """
         self['_id'] = self.context.getId()
 
     def get_zope_dublin_core(self):
-        """ If CMFCore is used in an old Zope site, then dump the
-            Dublin Core fields
+        """If CMFCore is used in an old Zope site, then dump the
+        Dublin Core fields
         """
         try:
             from Products.CMFCore.DynamicType import DynamicType
@@ -311,10 +296,9 @@ class Wrapper(dict):
             self['modification_date'] = ''
 
     def get_zope_cmfcore_fields(self):
-        """ If CMFCore is used in an old Zope site, then dump the fields we know
-            about
+        """If CMFCore is used in an old Zope site, then dump the fields we know
+        about.
         """
-
         try:
             from Products.CMFCore.DynamicType import DynamicType
             if not isinstance(self.context, DynamicType):
@@ -416,7 +400,7 @@ class Wrapper(dict):
             self['_zopeobject_document_src'] = ''
 
     def get_dexterity_fields(self):
-        """ If dexterity is used then extract fields
+        """If dexterity is used then extract fields.
         """
         try:
             from plone.dexterity.utils import iterSchemata
@@ -427,7 +411,6 @@ class Wrapper(dict):
 
             if not form.Schema.providedBy(self.context):
                 return
-
         except:
             return
 
@@ -507,9 +490,8 @@ class Wrapper(dict):
         return field.get(self.context)
 
     def get_archetypes_fields(self):
-        """ If Archetypes is used then dump schema
+        """If Archetypes is used then dump schema.
         """
-
         try:
             from Products.Archetypes.interfaces import IBaseObject
             if not IBaseObject.providedBy(self.context):
@@ -710,7 +692,7 @@ class Wrapper(dict):
                         fieldname, type_, self.context.absolute_url()))
 
     def get_references(self):
-        """ AT references
+        """AT references.
         """
         try:
             from Products.Archetypes.interfaces import IReferenceable
@@ -739,7 +721,7 @@ class Wrapper(dict):
                         '/'.join(bref.getPhysicalPath()))
 
     def get_translation(self):
-        """ Get LinguaPlone translation linking information.
+        """Get LinguaPlone translation linking information.
         """
         if not hasattr(self._context, 'getCanonical'):
             return
