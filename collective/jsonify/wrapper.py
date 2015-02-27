@@ -419,14 +419,13 @@ class Wrapper(dict):
         """If dexterity is used then extract fields.
         """
         try:
+            from plone.dexterity.interfaces import IDexterityContent
+            if not IDexterityContent.providedBy(self.context):
+                return
             from plone.dexterity.utils import iterSchemata
             # from plone.uuid.interfaces import IUUID
             from zope.schema import getFieldsInOrder
             from datetime import date
-            from plone.directives import form
-
-            if not form.Schema.providedBy(self.context):
-                return
         except:
             return
 
