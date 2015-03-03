@@ -4,6 +4,10 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Fix export of defaultPage and layout. Before, always the defaultPage was set
+  now layout is always set and defaultPage only, if there is one defined.
+  [thet]
+
 - Handle plone.formwidget.geolocation Dexterity field types.
   [thet]
 
