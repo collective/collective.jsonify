@@ -451,20 +451,26 @@ class Wrapper(dict):
         except:
             pass
 
+        _default = ''
         try:
-            _browser = '/'.join(
-                self.portal_utils.browserDefault(
-                    self.context)[1])
-            if _browser not in ['folder_listing', 'index_html']:
-                self['_layout'] = ''
-                self['_defaultpage'] = _browser
+            _default = '/'.join(
+                self.portal_utils.browserDefault(self.context)[1])
         except AttributeError:
-            try:
-                _browser = self.context.getLayout()
-                self['_layout'] = _browser
-            except:
-                pass
-            self['_defaultpage'] = ''
+            pass
+
+        _layout = ''
+        try:
+            _layout = self.context.getLayout()
+        except:
+            pass
+
+        if _default and _layout and _default == _layout:
+            # browserDefault always returns the layout, but we only want to set
+            # the defaultpage, if it's different from the layout
+            _default = ''
+
+        self['_defaultpage'] = _default
+        self['_layout'] = _layout
 
     def get_format(self):
         """Format of object

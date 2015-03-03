@@ -265,7 +265,7 @@ def export_content(self,
     if BATCH_START is not None:
         count_sub = BATCH_START
     msg = 'SUCCESS :: exported %s items from %s' % (
-        COUNTER - count_sub,
+        COUNTER - count_sub - 1,
         self.absolute_url()
     )
     if BATCH_START is not None:
