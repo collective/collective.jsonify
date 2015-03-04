@@ -99,6 +99,7 @@ PATHS_TO_SKIP = [
     '/MailHost',
     '/Plone/kupu_library_tool',
     '/RAMCache',
+    '/ResourceRegistryCache'
     '/access_rule',
     '/acl_users',
     '/archetype_tool',
