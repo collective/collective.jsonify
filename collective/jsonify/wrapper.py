@@ -1,5 +1,10 @@
 from AccessControl import Unauthorized
 from Acquisition import aq_base
+from plone.portlets.constants import CONTENT_TYPE_CATEGORY
+from plone.portlets.constants import CONTEXT_CATEGORY
+from plone.portlets.constants import GROUP_CATEGORY
+from plone.portlets.constants import USER_CATEGORY
+from plone.portlets.interfaces import ILocalPortletAssignmentManager
 from plone.portlets.interfaces import IPortletAssignmentMapping
 from plone.portlets.interfaces import IPortletManager
 from Products.CMFCore.utils import getToolByName
@@ -581,12 +586,15 @@ class Wrapper(dict):
 
     def get_portlets(self):
         """bla"""
-        portlets = []
         from zope.component import getUtility, getMultiAdapter
+
+        self['portlets'] = []
+        self['portlet_blacklists'] = {}
+
         for managername in ['plone.rightcolumn', 'plone.leftcolumn']:
             manager = getUtility(IPortletManager, name=managername)
             assignment = getMultiAdapter((self.context, manager),
-                                          IPortletAssignmentMapping).__of__(self.context)
+                                         IPortletAssignmentMapping).__of__(self.context)
             for item in assignment:
                 portlet_dict = {}
                 portlet = assignment.get(item)
@@ -595,8 +603,14 @@ class Wrapper(dict):
                 portlet_dict['manager'] = managername
                 if portlet_dict['__dict__'].has_key( '__parent__'):
                     del portlet_dict['__dict__']['__parent__']
-                portlets.append(portlet_dict)
-        self['portlets'] = portlets
+                self['portlets'].append(portlet_dict)
+
+            blacklist = getMultiAdapter((self.context, manager),
+                                        ILocalPortletAssignmentManager)
+            blacklist_info = self['portlet_blacklists'][managername] = {}
+            for category in (CONTENT_TYPE_CATEGORY, CONTEXT_CATEGORY, GROUP_CATEGORY,
+                             USER_CATEGORY):
+                blacklist_info[category] = blacklist.getBlacklistStatus(category)
 
     def get_portal_types_of_children(self):
         """try something
