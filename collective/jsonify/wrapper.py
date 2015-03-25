@@ -212,7 +212,7 @@ class Wrapper(dict):
             :keys: _gopip
         """
 
-	# Does not work on old plone
+        # Does not work on old plone
         #from Products.CMFPlone.CatalogTool import getObjPositionInParent
         #pos = getObjPositionInParent(self.context)
 
@@ -592,9 +592,9 @@ class Wrapper(dict):
                 portlet = assignment.get(item)
                 portlet_dict['class'] = '.'.join([portlet.__module__, portlet.__class__.__name__])
                 portlet_dict['__dict__'] = portlet.__dict__.copy()
-	        portlet_dict['manager'] = managername
+                portlet_dict['manager'] = managername
                 if portlet_dict['__dict__'].has_key( '__parent__'):
-			del portlet_dict['__dict__']['__parent__']
+                    del portlet_dict['__dict__']['__parent__']
                 portlets.append(portlet_dict)
         self['portlets'] = portlets
 
