@@ -6,6 +6,7 @@ from Products.CMFCore.utils import getToolByName
 from simplelayout.base.interfaces import ISimplelayoutTwoColumnView
 from simplelayout.base.interfaces import ISlotB
 from zope.annotation.interfaces import IAnnotations
+from zope.interface import directlyProvidedBy
 import os
 
 
@@ -571,6 +572,12 @@ class Wrapper(dict):
         self['imageLayout'] = imgLayout
         self['two_columns'] = ISimplelayoutTwoColumnView.providedBy(self.context)
         self['right_slot'] = ISlotB.providedBy(self.context)
+
+    def get_directly_provided_interfaces(self):
+        """Get directly provided interfaces as dottednames.
+        """
+        self['_directly_provided_interfaces'] = [
+            iface.__identifier__ for iface in directlyProvidedBy(self.context)]
 
     def get_portlets(self):
         """bla"""
