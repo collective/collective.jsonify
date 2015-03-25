@@ -1,12 +1,12 @@
 from AccessControl import Unauthorized
 from Acquisition import aq_base
+from plone.portlets.interfaces import IPortletAssignmentMapping
+from plone.portlets.interfaces import IPortletManager
 from Products.CMFCore.utils import getToolByName
-import os
-from zope.annotation.interfaces import IAnnotations
 from simplelayout.base.interfaces import ISimplelayoutTwoColumnView
 from simplelayout.base.interfaces import ISlotB
-from plone.portlets.interfaces import IPortletManager
-from plone.portlets.interfaces import IPortletAssignmentMapping
+from zope.annotation.interfaces import IAnnotations
+import os
 
 
 SCHEMAEXTENDER_FIELDS = ['BaseExtensionField', 'TranslatableExtensionField']
@@ -213,8 +213,8 @@ class Wrapper(dict):
 
 	# Does not work on old plone
         #from Products.CMFPlone.CatalogTool import getObjPositionInParent
-        #pos = getObjPositionInParent(self.context) 
-        
+        #pos = getObjPositionInParent(self.context)
+
         # Hack for old plone
         try:
             pos = self.context.aq_parent.getObjectPosition(self.context.id)
@@ -229,7 +229,7 @@ class Wrapper(dict):
                 return
         except ImportError:
             pass
-            
+
         self['_gopip'] = pos
 
     def get_id(self):
@@ -283,7 +283,7 @@ class Wrapper(dict):
             from zope.schema import getFieldsInOrder
             from datetime import datetime
             from plone.directives import form
-            
+
             if not form.Schema.isImplementedBy(self.context):
                 return
 
@@ -295,17 +295,17 @@ class Wrapper(dict):
             for fieldname, field in getFieldsInOrder(schemata):
                 try:
                     value = field.get(schemata(self.context))
-                    #value = getattr(context, name).__class__.__name__ 
+                    #value = getattr(context, name).__class__.__name__
                 except AttributeError:
                     continue
                 if value is field.missing_value:
                     continue
-                
-                field_type = field.__class__.__name__ 
-                
+
+                field_type = field.__class__.__name__
+
                 if field_type in ('RichText',):
                     value = unicode(value.raw)
-                    
+
                 elif field_type in ('NamedImage',):
                     fieldname = unicode('_datafield_' + fieldname)
 
@@ -321,7 +321,7 @@ class Wrapper(dict):
 
                     if data and len(data) > max_filesize:
                         continue
-                        
+
                     import base64
                     ctype = value.contentType
                     size = value.getSize()
@@ -329,7 +329,7 @@ class Wrapper(dict):
                         'data': base64.encodestring(data),
                         'size': size,
                         'filename': value.filename or '',
-                        'content_type': ctype}                    
+                        'content_type': ctype}
                     value = dvalue
 
                 elif field_type in ('DateTime',):
@@ -346,7 +346,7 @@ class Wrapper(dict):
                     elif self.field is not None:
                         value = unicode(value)
                     else:
-                        raise ValueError('Unable to serialize field value')                
+                        raise ValueError('Unable to serialize field value')
 
                 self[unicode(fieldname)] = value
 
