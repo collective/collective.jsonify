@@ -4,6 +4,14 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- When serializing datetime, date, time or DateTime properties, just use the
+  unicode representation which can be parsed.
+  [thet]
+
+- When serializing values, if there is no special handler for a field type,
+  just try to unicode the value.
+  [thet]
+
 - Fix export of defaultPage and layout. Before, always the defaultPage was set
   now layout is always set and defaultPage only, if there is one defined.
   [thet]

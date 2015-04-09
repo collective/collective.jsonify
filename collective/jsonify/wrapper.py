@@ -1,3 +1,6 @@
+from Acquisition import aq_base
+from DateTime import DateTime
+import datetime
 import os
 
 
@@ -7,7 +10,6 @@ class Wrapper(dict):
     """
 
     def __init__(self, context):
-        from Acquisition import aq_base
         self.context = context
         self._context = aq_base(context)
         self.charset = None
@@ -130,10 +132,9 @@ class Wrapper(dict):
                     )
                     if type(value) in BASIC_TYPES:
                         pass
-                    elif field is not None:
-                        value = unicode(value)
                     else:
-                        raise ValueError('Unable to serialize field value')
+                        # E.g. DateTime or datetime are nicely representated
+                        value = unicode(value)
 
                 self[unicode(fieldname)] = value
 
@@ -340,9 +341,8 @@ class Wrapper(dict):
                 self[unicode(fieldname)] = value
 
             else:
-                raise TypeError(
-                    'ArchetypesWrapper: Unknown field %s (type: %s) at %s' % (
-                        fieldname, type_, self.context.absolute_url()))
+                # Just try to stringify value
+                self[unicode(fieldname)] = unicode(value)
 
     def get_references(self):
         """AT references.
@@ -424,6 +424,11 @@ class Wrapper(dict):
                 typ = self.context.getPropertyType(pid)
                 if typ == 'string' and isinstance(val, str):
                     val = self.decode(val)
+                if isinstance(val, DateTime)\
+                        or isinstance(val, datetime.time)\
+                        or isinstance(val, datetime.datetime)\
+                        or isinstance(val, datetime.date):
+                    val = unicode(val)
                 self['_properties'].append(
                     (pid, val, self.context.getPropertyType(pid))
                 )
