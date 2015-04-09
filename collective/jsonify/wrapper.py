@@ -42,6 +42,14 @@ class Wrapper(dict):
             if method.startswith('get_'):
                 getattr(self, method)()
 
+    def providedBy(self, iface, ctx):
+        # Handle zope.interface and Interface interfaces.
+        if getattr(iface, 'providedBy', False):
+            ret = iface.providedBy(ctx)
+        elif getattr(iface, 'isImplementedBy', False):
+            ret = iface.isImplementedBy(ctx)
+        return bool(ret)
+
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
         """ Sometimes we have to guess charset
         """
