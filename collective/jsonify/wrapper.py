@@ -35,6 +35,14 @@ class Wrapper(dict):
             if method.startswith('get_'):
                 getattr(self, method)()
 
+    def providedBy(self, iface, ctx):
+        # Handle zope.interface and Interface interfaces.
+        if getattr(iface, 'providedBy', False):
+            ret = iface.providedBy(ctx)
+        elif getattr(iface, 'isImplementedBy', False):
+            ret = iface.isImplementedBy(ctx)
+        return bool(ret)
+
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
         """Sometimes we have to guess charset
         """
@@ -57,7 +65,7 @@ class Wrapper(dict):
         """
         try:
             from plone.dexterity.interfaces import IDexterityContent
-            if not IDexterityContent.providedBy(self.context):
+            if not self.providedBy(IDexterityContent, self.context):
                 return
             from plone.dexterity.utils import iterSchemata
             # from plone.uuid.interfaces import IUUID
@@ -151,7 +159,7 @@ class Wrapper(dict):
         """
         try:
             from Products.Archetypes.interfaces import IBaseObject
-            if not IBaseObject.providedBy(self.context):
+            if not self.providedBy(IBaseObject, self.context):
                 return
         except:
             return
@@ -172,7 +180,7 @@ class Wrapper(dict):
             type_ = field.__class__.__name__
 
             try:
-                if IExtensionField.providedBy(field):
+                if self.providedBy(IExtensionField, field):
                     # archetypes.schemaextender case:
                     # Try to get the base class of the schemaexter-field, which
                     # is not an extension field.
@@ -352,7 +360,7 @@ class Wrapper(dict):
         """
         try:
             from Products.Archetypes.interfaces import IReferenceable
-            if not IReferenceable.providedBy(self.context):
+            if not self.providedBy(IReferenceable, self.context):
                 return
         except:
             return
@@ -580,7 +588,7 @@ class Wrapper(dict):
         # than an int
         try:
             from plone.indexer.interfaces import IIndexer
-            if IIndexer.providedBy(pos):
+            if self.providedBy(IIndexer, pos):
                 self['_gopip'] = pos()
                 return
         except ImportError:
@@ -603,14 +611,20 @@ class Wrapper(dict):
         """
         context = self.context
         try:
+            from Products.ATContentTypes.interface.interfaces import IATContentType  # noqa
+            if self.providedBy(IATContentType, context):
+                return False
+        except:
+            pass
+        try:
             from Products.ATContentTypes.interfaces import IATContentType
-            if IATContentType.providedBy(context):
+            if self.providedBy(IATContentType, context):
                 return False
         except:
             pass
         try:
             from plone.dexterity.interfaces import IDexterityContent
-            if IDexterityContent.providedBy(context):
+            if self.providedBy(IDexterityContent, context):
                 return False
         except:
             pass

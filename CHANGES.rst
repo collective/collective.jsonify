@@ -4,6 +4,10 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- Let the wrapper test correctly for ``zope.interface`` and ``Interface``
+  interfaces.
+  [thet]
+
 - In the wrapper class, call the value in decode, if it's a callable.
   [thet]
 
