@@ -38,10 +38,13 @@ class Wrapper(dict):
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
         """Sometimes we have to guess charset
         """
+        if callable(s):
+            s = s()
         if isinstance(s, unicode):
             return s
+        test_encodings = encodings
         if self.charset:
-            test_encodings = (self.charset, ) + encodings
+            test_encodings = (self.charset, ) + test_encodings
         for encoding in test_encodings:
             try:
                 return s.decode(encoding)
@@ -208,7 +211,7 @@ class Wrapper(dict):
 
                 if value and type_ in ['ComputedField']:
                     if isinstance(value, str):
-                        value = value.decode('utf-8')
+                        value = self.decode(value)
 
                 if value and type_ in ['StringField', 'TextField']:
                     try:

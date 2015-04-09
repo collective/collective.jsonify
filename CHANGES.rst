@@ -4,6 +4,9 @@ Changelog
 0.3 (unreleased)
 ----------------
 
+- In the wrapper class, call the value in decode, if it's a callable.
+  [thet]
+
 - When serializing datetime, date, time or DateTime properties, just use the
   unicode representation which can be parsed.
   [thet]
