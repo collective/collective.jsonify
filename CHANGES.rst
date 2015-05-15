@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.3 (unreleased)
+1.0 (2015-05-16)
 ----------------
 
 - Let the wrapper test correctly for ``zope.interface`` and ``Interface``
