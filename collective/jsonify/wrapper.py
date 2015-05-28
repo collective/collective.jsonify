@@ -12,6 +12,7 @@ from simplelayout.base.interfaces import ISimplelayoutTwoColumnView
 from simplelayout.base.interfaces import ISlotB
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import directlyProvidedBy
+import base64
 import os
 
 
@@ -603,6 +604,25 @@ class Wrapper(dict):
                 portlet_dict['manager'] = managername
                 if portlet_dict['__dict__'].has_key( '__parent__'):
                     del portlet_dict['__dict__']['__parent__']
+
+		# handle images in portlets
+		for key in portlet_dict['__dict__']:
+		    field = portlet_dict['__dict__'][key]
+		    type_ = field.__class__.__name__
+		    if type_ in ['Image']:
+			value = field.data
+			if type(value) is not str:
+                    	    if type(value.data) is str:
+                                value = base64.encodestring(value.data)
+                            else:
+                                data = value.data
+                        	value = ''
+                        	while data is not None:
+                            	    value += data.data
+                            	    data = data.next
+                        	value = base64.encodestring(value)
+			    portlet_dict['__dict__'][key] = value
+
                 self['portlets'].append(portlet_dict)
 
             blacklist = getMultiAdapter((self.context, manager),
