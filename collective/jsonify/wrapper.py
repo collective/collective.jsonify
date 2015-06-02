@@ -640,6 +640,16 @@ class Wrapper(dict):
             portal_types.append(self.context.get(obj_id).portal_type)
         self['childrencontenttypes'] = list(set(portal_types))
 
+    def get_placeful_workflow_policy(self):
+        placeful_workflow = getToolByName(self.context,
+                                          'portal_placeful_workflow')
+        config = placeful_workflow.getWorkflowPolicyConfig(self.context)
+        if config:
+            self['_placeful_workflow_config'] = [
+                config.workflow_policy_in,
+                config.workflow_policy_below]
+
+
 class WrapperWithoutFile(Wrapper):
 
     def get_archetypes_fields(self):
