@@ -620,8 +620,8 @@ class Wrapper(dict):
                         	while data is not None:
                             	    value += data.data
                             	    data = data.next
-                        	value = base64.encodestring(value)
-			    portlet_dict['__dict__'][key] = value
+                        value = base64.encodestring(value)
+			portlet_dict['__dict__'][key] = value
 
                 self['portlets'].append(portlet_dict)
 
