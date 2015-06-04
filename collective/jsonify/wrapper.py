@@ -12,6 +12,7 @@ from simplelayout.base.interfaces import ISimplelayoutTwoColumnView
 from simplelayout.base.interfaces import ISlotB
 from zope.annotation.interfaces import IAnnotations
 from zope.interface import directlyProvidedBy
+import base64
 import os
 
 
@@ -603,6 +604,25 @@ class Wrapper(dict):
                 portlet_dict['manager'] = managername
                 if portlet_dict['__dict__'].has_key( '__parent__'):
                     del portlet_dict['__dict__']['__parent__']
+
+		# handle images in portlets
+		for key in portlet_dict['__dict__']:
+		    field = portlet_dict['__dict__'][key]
+		    type_ = field.__class__.__name__
+		    if type_ in ['Image']:
+			value = field.data
+			if type(value) is not str:
+                    	    if type(value.data) is str:
+                                value = base64.encodestring(value.data)
+                            else:
+                                data = value.data
+                        	value = ''
+                        	while data is not None:
+                            	    value += data.data
+                            	    data = data.next
+                        value = base64.encodestring(value)
+			portlet_dict['__dict__'][key] = value
+
                 self['portlets'].append(portlet_dict)
 
             blacklist = getMultiAdapter((self.context, manager),
@@ -619,6 +639,16 @@ class Wrapper(dict):
         for obj_id in self.context.objectIds():
             portal_types.append(self.context.get(obj_id).portal_type)
         self['childrencontenttypes'] = list(set(portal_types))
+
+    def get_placeful_workflow_policy(self):
+        placeful_workflow = getToolByName(self.context,
+                                          'portal_placeful_workflow')
+        config = placeful_workflow.getWorkflowPolicyConfig(self.context)
+        if config:
+            self['_placeful_workflow_config'] = [
+                config.workflow_policy_in,
+                config.workflow_policy_below]
+
 
 class WrapperWithoutFile(Wrapper):
 
