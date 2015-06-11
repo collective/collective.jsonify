@@ -8,6 +8,8 @@ from plone.portlets.interfaces import ILocalPortletAssignmentManager
 from plone.portlets.interfaces import IPortletAssignmentMapping
 from plone.portlets.interfaces import IPortletManager
 from Products.CMFCore.utils import getToolByName
+from simplelayout.base.interfaces import IBlockConfig
+from simplelayout.base.interfaces import ISimpleLayoutBlock
 from simplelayout.base.interfaces import ISimplelayoutTwoColumnView
 from simplelayout.base.interfaces import ISlotB
 from zope.annotation.interfaces import IAnnotations
@@ -578,6 +580,17 @@ class Wrapper(dict):
         self['imageLayout'] = imgLayout
         self['two_columns'] = ISimplelayoutTwoColumnView.providedBy(self.context)
         self['right_slot'] = ISlotB.providedBy(self.context)
+
+    def get_sl_blockconfig(self):
+        """Get simplelayout blockconfig"""
+        if not ISimpleLayoutBlock.providedBy(self.context):
+            return
+        self['blockconf'] = {}
+        blockconf = IBlockConfig(self.context)
+        self['blockconf']['block_height'] = blockconf.block_height
+        self['blockconf']['image_layout'] = blockconf.image_layout
+        self['blockconf']['viewlet_manager'] = blockconf.viewlet_manager
+        self['blockconf']['viewname'] = blockconf.viewname
 
     def get_directly_provided_interfaces(self):
         """Get directly provided interfaces as dottednames.
