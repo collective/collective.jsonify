@@ -778,3 +778,43 @@ class Wrapper(dict):
             self['document_src'] = self.decode(document_src())
         else:
             self['_zopeobject_document_src'] = ''
+
+    def get_context_portlets(self):
+        try:
+            from plone.portlets.constants import CONTEXT_ASSIGNMENT_KEY
+            from plone.app.portlets.interfaces import IPortletTypeInterface
+            from zope.annotation.interfaces import IAnnotations
+            from zope.component import getUtilitiesFor
+            from zope.interface import providedBy
+        except ImportError:
+            return
+
+        portlet_assignments = []
+        portlet_schemata = dict([(iface, name) for name, iface in
+                                 getUtilitiesFor(IPortletTypeInterface)])
+
+        annotations = IAnnotations(self.context)
+        assignments = annotations.get(CONTEXT_ASSIGNMENT_KEY, None)
+        for manager, mapping in assignments.items():
+            for name, assignment in mapping.items():
+                type_ = None
+                for schema in providedBy(assignment).flattened():
+                    type_ = portlet_schemata.get(schema, None)
+                    if type_ is not None:
+                        break
+                if type_ is not None:
+                    data = {}
+                    for fieldname in schema:
+                        field = schema[fieldname]
+                        data[fieldname] = field.get(assignment)
+
+                    portlet_assignments.append(dict(
+                        manager=manager,
+                        type=type_,
+                        name=name,
+                        category=mapping.__category__,
+                        data=data,
+                    ))
+
+        if portlet_assignments:
+            self['_portlet_assignments'] = portlet_assignments
