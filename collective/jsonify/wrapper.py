@@ -50,6 +50,12 @@ class Wrapper(dict):
             ret = iface.isImplementedBy(ctx)
         return bool(ret)
 
+    def implementedBy(self, iface, obj):
+        if getattr(iface, 'isImplementedBy', False):
+            return iface.isImplementedBy(obj)
+        else:
+            return iface.implementedBy(obj)
+
     def decode(self, s, encodings=('utf8', 'latin1', 'ascii')):
         """ Sometimes we have to guess charset
         """
@@ -241,7 +247,7 @@ class Wrapper(dict):
         # After plone 3.3 the above method returns a 'DelegatingIndexer' rather than an int
         try:
             from plone.indexer.interfaces import IIndexer
-            if IIndexer.isImplementedBy(pos):
+            if self.implementedBy(IIndexer, pos):
                 self['_gopip'] = pos()
                 return
         except ImportError:
@@ -301,7 +307,7 @@ class Wrapper(dict):
             from datetime import datetime
             from plone.directives import form
 
-            if not form.Schema.isImplementedBy(self.context):
+            if not self.implementedBy(form.Schema, self.context):
                 return
 
         except:
@@ -372,7 +378,7 @@ class Wrapper(dict):
         """
         try:
             from Products.Archetypes.interfaces.base import IBaseObject
-            if not IBaseObject.isImplementedBy(self.context):
+            if not self.implementedBy(IBaseObject, self.context):
                 return
         except:
             return
@@ -550,7 +556,7 @@ class Wrapper(dict):
         """
         try:
             from Products.Archetypes.interfaces.base import IReferenceable
-            if not IReferenceable.isImplementedBy(self.context):
+            if not self.implementedBy(IReferenceable, self.context):
                 return
         except:
             return
@@ -586,12 +592,12 @@ class Wrapper(dict):
         anno = IAnnotations(self.context)
         imgLayout = anno.get('imageLayout', '')
         self['imageLayout'] = imgLayout
-        self['two_columns'] = ISimplelayoutTwoColumnView.providedBy(self.context)
-        self['right_slot'] = ISlotB.providedBy(self.context)
+        self['two_columns'] = self.providedBy(ISimplelayoutTwoColumnView, self.context)
+        self['right_slot'] = self.providedBy(ISlotB, self.context)
 
     def get_sl_blockconfig(self):
         """Get simplelayout blockconfig"""
-        if not ISimpleLayoutBlock.providedBy(self.context):
+        if not self.providedBy(ISimpleLayoutBlock, self.context):
             return
         self['blockconf'] = {}
         blockconf = IBlockConfig(self.context)
@@ -680,7 +686,7 @@ class WrapperWithoutFile(Wrapper):
 
         try:
             from Products.Archetypes.interfaces import IBaseObject
-            if not IBaseObject.providedBy(self.context):
+            if not self.providedBy(IBaseObject, self.context):
                 return
         except:
             return
