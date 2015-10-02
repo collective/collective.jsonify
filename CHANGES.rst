@@ -4,7 +4,8 @@ Changelog
 1.1 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- set json repsonse headers
+  [jensens]
 
 
 1.0 (2015-05-16)

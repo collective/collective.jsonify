@@ -31,7 +31,9 @@ def get_item(self):
     except Exception, e:
         etype = sys.exc_info()[0]
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
-        return 'ERROR: exception wrapping object: %s: %s\n%s' % (etype, str(e), tb)
+        return 'ERROR: exception wrapping object: %s: %s\n%s' % (
+            etype, str(e), tb
+        )
 
     passed = False
     while not passed:
@@ -49,6 +51,7 @@ def get_item(self):
                 passed = False
             else:
                 return ('ERROR: Unknown error serializing object: %s' % error)
+    self.REQUEST.response.setHeader("Content-type", "application/json")
     return JSON
 
 
@@ -65,6 +68,7 @@ def get_children(self):
         # Thus we need to convert it to a list
         if not isinstance(children, list):
             children = [item for item in children]
+    self.REQUEST.response.setHeader("Content-type", "application/json")
     return json.dumps(children)
 
 
@@ -80,4 +84,5 @@ def get_catalog_results(self):
                      {"__builtins__": None}, {})
     item_paths = [item.getPath() for item
                   in self.unrestrictedSearchResults(**query)]
+    self.REQUEST.response.setHeader("Content-type", "application/json")
     return json.dumps(item_paths)
