@@ -8,7 +8,7 @@ if sys.version_info < (2, 3):
 else:
     from setuptools import setup, find_packages
 
-version = '1.1'
+version = '1.2.dev0'
 
 setup(
     name='collective.jsonify',
