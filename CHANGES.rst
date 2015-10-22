@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.1 (unreleased)
+1.1 (2015-10-22)
 ----------------
 
 - set json repsonse headers
