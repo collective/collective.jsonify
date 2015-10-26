@@ -14,7 +14,7 @@ The exported JSON_ is a collective.transmogrifier_ friendly format. Install
 transmogrifier pipeline on the site you're importing to, using the blueprints in
 the collective.jsonmigrator_ package.
 
-Alternatively use the provided export script by adding it to 
+Alternatively use the provided export script by adding it to an external method as described in `using the exporter`_.
 
 For more information see the documentation_.
 
@@ -28,5 +28,6 @@ For more information see the documentation_.
 .. _`JSON`: http://en.wikipedia.org/wiki/JSON
 .. _`collective.transmogrifier`: http://pypi.python.org/pypi/collective.transmogrifier
 .. _`collective.jsonmigrator`: http://pypi.python.org/pypi/collective.jsonmigrator
+.. _`using the exporter`: https://collectivejsonify.readthedocs.org/en/latest/#using-the-exporter
 .. _`documentation`: https://collectivejsonify.readthedocs.org
 .. _`Rok Garbas`: http://www.garbas.si/labs/plone-migration
