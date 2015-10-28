@@ -295,21 +295,27 @@ def walk(folder, skip_callback=lambda item: False):
     for item_id in folder.objectIds():
         item = folder[item_id]
 
+        yield_item = True
         path = '/'.join(item.getPhysicalPath())
-        if filter(lambda x: x in path, PATHS_TO_SKIP)\
-                or item.__class__.__name__ in CLASSNAME_TO_SKIP\
-                or item.getId() in ID_TO_SKIP:
+        if filter(lambda x: x in path, PATHS_TO_SKIP):
+            # Skip the whole path, including subdirectories 
             continue
+        if item.__class__.__name__ in CLASSNAME_TO_SKIP\
+                or item.getId() in ID_TO_SKIP:
+            yield_item = False
         if item.__class__.__name__ in CLASSNAME_TO_SKIP_LOUD:
             logger.warn('>> SKIPPING :: [%s] %s' % (
                 item.__class__.__name__,
                 item.absolute_url()
             ))
-            continue
+            yield_item = False
         if skip_callback and skip_callback(item):
-            continue
+            yield_item = False
 
-        yield item
+        if yield_item:
+            # skip yielding items, which do not fullfill constraints from above
+            # but allow walking into subdirectories (below)
+            yield item
         if getattr(item, 'objectIds', None) and item.objectIds():
             for subitem in walk(item, skip_callback=skip_callback):
                 yield subitem
