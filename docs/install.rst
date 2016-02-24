@@ -40,7 +40,7 @@ External methods for remote access from the importing Plone instance, using
 
  - get_catalog_results:
    - id: ``get_catalog_results``
-   - module name: ``json_methods``
+   - module name: ``collective.jsonify.json_methods``
    - function name: ``get_catalog_results``
 
 
