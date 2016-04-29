@@ -1,2 +1,6 @@
 include *.rst *.cfg
+global-exclude *.pyc
+exclude bootstrap.py
 recursive-include collective *
+recursive-include docs *
+recursive-include example-buildouts *

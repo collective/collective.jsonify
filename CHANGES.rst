@@ -4,7 +4,10 @@ Changelog
 1.3 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fix manifest
+- Added `CHANGES.rst merge=union` to `.gitattributes`
+  [ale-rt]
+
 
 
 1.2 (2016-05-24)
