@@ -1,5 +1,6 @@
 from Acquisition import aq_base
 from DateTime import DateTime
+from Products.CMFCore.utils import getToolByName
 import datetime
 import os
 
@@ -778,3 +779,25 @@ class Wrapper(dict):
             self['document_src'] = self.decode(document_src())
         else:
             self['_zopeobject_document_src'] = ''
+
+
+    def get_history(self):
+        """ Export the history - metadata
+        """
+        try:
+            repo_tool = getToolByName(self.context, "portal_repository")
+            history_metadata = repo_tool.getHistoryMetadata(self.context)
+
+            retrieve = history_metadata.retrieve
+            getId = history_metadata.getVersionId
+            history = []
+            # Count backwards from most recent to least recent
+            for i in xrange(history_metadata.getLength(countPurged=False)-1, -1, -1):
+                version = retrieve(i, countPurged=False)['metadata'].copy()
+                version['version_id'] = getId(i, countPurged=False)
+                history.append(version)
+            self['_history'] = history
+
+        except:
+            pass
+
