@@ -795,6 +795,8 @@ class Wrapper(dict):
             for i in xrange(history_metadata.getLength(countPurged=False)-1, -1, -1):
                 version = retrieve(i, countPurged=False)['metadata'].copy()
                 version['version_id'] = getId(i, countPurged=False)
+                dateaux = datetime.datetime.fromtimestamp(version['sys_metadata'].get('timestamp',0))
+                version['sys_metadata']['timestamp'] = dateaux.strftime("%Y/%m/%d %H:%M:%S GMT")
                 history.append(version)
             self['_history'] = history
 
