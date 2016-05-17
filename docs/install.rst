@@ -7,7 +7,7 @@ easiest way is to use buildout, as for any other modern Plone project. Other
 options include:
 
 1. Play with PYTHONPATH manually.
-2. Use ``easy_install collective.jsonify`` or ``pip collective.jsonify`` which
+2. Use ``easy_install collective.jsonify`` or ``pip install collective.jsonify`` which
    will also pull ``simplejson``.
 
 *Note: if you are working with python 2.2, then you will need to install a `tweaked 
