@@ -4,6 +4,9 @@ Changelog
 1.2 (unreleased)
 ----------------
 
+- Do not require simplejson if we already have the native json module
+  [ale-rt]
+
 - When doing an export with ``export_content`` and having constraints to skip
   items, still allow to walk into subitems of the skipped ones - except for
   skipped paths, where the whole path is skipped.
