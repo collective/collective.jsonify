@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.2 (unreleased)
+1.2 (2016-05-24)
 ----------------
 
 - Do not require simplejson if we already have the native json module
