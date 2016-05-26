@@ -18,6 +18,9 @@ Changelog
   skipped paths, where the whole path is skipped.
   [thet]
 
+- Added the history-metadata to the export
+  [rristow] 
+
 
 1.1 (2015-10-22)
 ----------------
