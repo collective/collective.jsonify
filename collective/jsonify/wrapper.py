@@ -787,19 +787,23 @@ class Wrapper(dict):
         try:
             repo_tool = getToolByName(self.context, "portal_repository")
             history_metadata = repo_tool.getHistoryMetadata(self.context)
+            if not(hasattr(history_metadata,'getLength')):
+                # No history metadata
+                return
 
-            retrieve = history_metadata.retrieve
-            getId = history_metadata.getVersionId
-            history = []
+            history_list = []
             # Count backwards from most recent to least recent
             for i in xrange(history_metadata.getLength(countPurged=False)-1, -1, -1):
-                version = retrieve(i, countPurged=False)['metadata'].copy()
-                version['version_id'] = getId(i, countPurged=False)
-                dateaux = datetime.datetime.fromtimestamp(version['sys_metadata'].get('timestamp',0))
-                version['sys_metadata']['timestamp'] = dateaux.strftime("%Y/%m/%d %H:%M:%S GMT")
-                history.append(version)
-            self['_history'] = history
+                data = history_metadata.retrieve(i, countPurged=False)
+                meta = data["metadata"]["sys_metadata"].copy()
+                version_id = history_metadata.getVersionId(i, countPurged=False)
+                try:
+                    dateaux = datetime.datetime.fromtimestamp(meta.get('timestamp',0))
+                    meta['timestamp'] = dateaux.strftime("%Y/%m/%d %H:%M:%S GMT")
+                except Exception, ex:
+                    meta['timestamp']=''
+                history_list.append(meta)
+            self['_history'] = history_list
 
-        except:
+        except Exception, ex:
             pass
-
