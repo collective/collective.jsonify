@@ -9,6 +9,8 @@ Changelog
   [ale-rt]
 
 
+- Added the history to JSON export.
+  [rristow]
 
 1.2 (2016-05-24)
 ----------------
