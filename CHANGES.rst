@@ -4,6 +4,11 @@ Changelog
 1.3 (unreleased)
 ----------------
 
+- Fixed value for unknown fields.  The value was never calculated
+  fresh for these fields, so you got the value of the previous field.
+  Or you probably got a NameError if this was the first field.
+  [maurits]
+
 - Fix manifest
 - Added `CHANGES.rst merge=union` to `.gitattributes`
   [ale-rt]
