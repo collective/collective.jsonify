@@ -354,6 +354,10 @@ class Wrapper(dict):
 
             else:
                 # Just try to stringify value
+                try:
+                    value = field.getRaw(self.context)
+                except AttributeError:
+                    value = self._get_at_field_value(field)
                 self[unicode(fieldname)] = unicode(value)
 
     def get_references(self):
