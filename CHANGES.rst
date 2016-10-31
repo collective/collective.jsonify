@@ -1,8 +1,8 @@
 Changelog
 =========
 
-1.3 (unreleased)
-----------------
+1.2.post2 (2016-10-31)
+----------------------
 
 - Fixed value for unknown fields.  The value was never calculated
   fresh for these fields, so you got the value of the previous field.
