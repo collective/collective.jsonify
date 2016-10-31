@@ -8,7 +8,7 @@ if sys.version_info < (2, 3):
 else:
     from setuptools import setup, find_packages
 
-version = '1.2.post2'
+version = '1.2.post3.dev0'
 
 requirements = [
     'setuptools',
