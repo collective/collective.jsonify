@@ -10,9 +10,10 @@ Changelog
   [maurits]
 
 - Fix manifest
-- Added `CHANGES.rst merge=union` to `.gitattributes`
   [ale-rt]
 
+- Added `CHANGES.rst merge=union` to `.gitattributes`
+  [ale-rt]
 
 - Added the history to JSON export.
   [rristow]
