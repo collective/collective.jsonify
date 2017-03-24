@@ -4,6 +4,9 @@ Changelog
 1.3 (unreleased)
 ----------------
 
+- Show translations from LinguaPlone if canonical is available.
+  [agitator]
+
 - Fixed value for unknown fields.  The value was never calculated
   fresh for these fields, so you got the value of the previous field.
   Or you probably got a NameError if this was the first field.
