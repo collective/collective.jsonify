@@ -602,13 +602,20 @@ class Wrapper(dict):
         self['_gopip'] = pos
 
     def get_translation(self):
-        """Get LinguaPlone translation linking information.
+        """ Get LinguaPlone translation linking information.
         """
         if not hasattr(self._context, 'getCanonical'):
             return
-        self['_translationOf'] = '/'.join(
-            self.context.getCanonical().getPhysicalPath()
-        )[len(self.portal_path):]
+
+        translations = self.context.getTranslations()
+        self['_translations'] = {}
+
+        for lang in translations:
+            trans_obj = '/'.join(translations[lang][0].getPhysicalPath())[len(self.portal_path):]
+            self['_translations'][lang] = trans_obj
+
+        self['_translationOf'] = '/'.join(self.context.getCanonical(
+                                 ).getPhysicalPath())[len(self.portal_path):]
         self['_canonicalTranslation'] = self.context.isCanonical()
 
     def _is_cmf_only_obj(self):
