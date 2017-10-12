@@ -19,7 +19,7 @@ def _clean_dict(dct, error):
         if message.startswith(repr(value)):
             del new_dict[key]
             return key, new_dict
-    raise ValueError("Could not clean up object")
+    raise ValueError("Could not clean up object %s" % dct['_id'])
 
 
 def get_item(self):

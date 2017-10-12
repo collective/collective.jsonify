@@ -61,6 +61,33 @@ class Wrapper(dict):
                 pass
         return s.decode(test_encodings[0], 'ignore')
 
+    def _serialize_file(self, value):
+        if hasattr(value, 'open'):
+            data = value.open().read()
+        else:
+            data = value.data
+
+        try:
+            max_filesize = int(
+                os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
+        except ValueError:
+            max_filesize = 20000000
+
+        if data and len(data) > max_filesize:
+            raise ValueError
+
+        import base64
+        ctype = value.contentType
+        size = value.getSize()
+        dvalue = {
+            'data': base64.b64encode(data),
+            'size': size,
+            'filename': value.filename or '',
+            'content_type': ctype,
+            'encoding': 'base64'
+        }
+        return dvalue
+
     def get_dexterity_fields(self):
         """If dexterity is used then extract fields.
         """
@@ -87,10 +114,32 @@ class Wrapper(dict):
                     continue
 
                 field_type = field.__class__.__name__
+                try:
+                    field_value_type = field.value_type.__class__.__name__
+                except AttributeError:
+                    field_value_type = None
 
                 if field_type in ('RichText',):
                     # TODO: content_type missing
                     value = unicode(value.raw)
+
+                elif field_type in (
+                    'List',
+                    'Tuple',
+                ) and field_value_type in (
+                    'NamedImage',
+                    'NamedBlobImage',
+                    'NamedFile',
+                    'NamedBlobFile'
+                ):
+                    fieldname = unicode('_datafield_' + fieldname)
+                    _value = []
+                    for item in value:
+                        try:
+                            _value.append(self._serialize_file(item))
+                        except ValueError:
+                            continue
+                    value = _value
 
                 elif field_type in (
                     'NamedImage',
@@ -100,32 +149,24 @@ class Wrapper(dict):
                 ):
                     # still to test above with NamedFile & NamedBlobFile
                     fieldname = unicode('_datafield_' + fieldname)
-
-                    if hasattr(value, 'open'):
-                        data = value.open().read()
-                    else:
-                        data = value.data
-
                     try:
-                        max_filesize = int(
-                            os.environ.get('JSONIFY_MAX_FILESIZE', 20000000))
+                        value = self._serialize_file(value)
                     except ValueError:
-                        max_filesize = 20000000
-
-                    if data and len(data) > max_filesize:
                         continue
 
-                    import base64
-                    ctype = value.contentType
-                    size = value.getSize()
-                    dvalue = {
-                        'data': base64.b64encode(data),
-                        'size': size,
-                        'filename': value.filename or '',
-                        'content_type': ctype,
-                        'encoding': 'base64'
-                    }
-                    value = dvalue
+                elif field_type in (
+                    'RelationList',
+                ) and field_value_type in (
+                    'RelationChoice',
+                ):
+                    _value = []
+                    for item in value:
+                        try:
+                            # Simply export the path to the relation. Postprocessing when importing is needed.
+                            _value.append(item.to_path)
+                        except ValueError:
+                            continue
+                    value = _value
 
                 elif field_type == 'GeolocationField':
                     # super special plone.formwidget.geolocation case
