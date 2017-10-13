@@ -3,6 +3,11 @@ from DateTime import DateTime
 from Products.CMFCore.utils import getToolByName
 import datetime
 import os
+try:
+    from plone.uuid.interfaces import IUUID
+    HASPLONEUUID = True
+except ImportError:
+    HASPLONEUUID = False
 
 
 class Wrapper(dict):
@@ -437,6 +442,8 @@ class Wrapper(dict):
         """
         if hasattr(self._context, 'UID'):
             self['_uid'] = self.context.UID()
+        elif HASPLONEUUID:
+            self['_uid'] = IUUID(self.context.aq_base, None)
 
     def get_id(self):
         """Object id
