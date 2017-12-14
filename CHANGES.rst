@@ -4,6 +4,9 @@ Changelog
 1.3 (unreleased)
 ----------------
 
+- Do not export FormGen and Redirection tools.
+  [hvelarde]
+
 - Show translations from LinguaPlone if canonical is available.
   [agitator]
 
@@ -16,9 +19,9 @@ Changelog
 - Added `CHANGES.rst merge=union` to `.gitattributes`
   [ale-rt]
 
-
 - Added the history to JSON export.
   [rristow]
+
 
 1.2 (2016-05-24)
 ----------------
