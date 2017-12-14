@@ -868,13 +868,18 @@ class Wrapper(dict):
             pass
 
     def get_redirects(self):
-        """Export plone.app.redirector redirects, if available."""
+        """Export plone.app.redirector redirects, if available.
+        Comply with default expectations of redirector section in
+        plone.app.transmogrifier: use the same key name "_old_paths"
+        and don't include the site name on the path.
+        """
         try:
             from zope.component import getUtility
             from plone.app.redirector.interfaces import IRedirectionStorage
             storage = getUtility(IRedirectionStorage)
             redirects = storage.redirects('/'.join(self.context.getPhysicalPath()))
             if redirects:
-                self['_redirects'] = redirects
+                # remove site name (e.g. "/Plone") from redirect paths
+                self['_old_paths'] = [r[len(self.portal_path):] for r in redirects]
         except:  # noqa: E722
             pass
