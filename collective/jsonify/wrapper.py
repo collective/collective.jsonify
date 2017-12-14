@@ -866,3 +866,15 @@ class Wrapper(dict):
 
         except:
             pass
+
+    def get_redirects(self):
+        """Export plone.app.redirector redirects, if available."""
+        try:
+            from zope.component import getUtility
+            from plone.app.redirector.interfaces import IRedirectionStorage
+            storage = getUtility(IRedirectionStorage)
+            redirects = storage.redirects('/'.join(self.context.getPhysicalPath()))
+            if redirects:
+                self['_redirects'] = redirects
+        except:  # noqa: E722
+            pass

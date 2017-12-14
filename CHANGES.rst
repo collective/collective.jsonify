@@ -4,6 +4,9 @@ Changelog
 1.3 (unreleased)
 ----------------
 
+- Export plone.app.redirector redirects, if available.
+  [hvelarde]
+
 - Do not export FormGen and Redirection tools.
   [hvelarde]
 
