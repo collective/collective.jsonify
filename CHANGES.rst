@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.3 (unreleased)
+1.3 (2017-12-21)
 ----------------
 
 - Export plone.app.redirector redirects, if available.
