@@ -715,6 +715,12 @@ class Wrapper(dict):
         for field in ('subject', 'contributors'):
             self[field] = []
             val_tuple = getattr(self.context, field, False)
+            if not val_tuple:
+                # At least on Plone 2.5 we need Subject and Contributors
+                # with a first capital letter.
+                val_tuple = getattr(self.context, field.title(), False)
+                if callable(val_tuple):
+                    val_tuple = val_tuple()
             if val_tuple:
                 for val in val_tuple:
                     self[field].append(self.decode(val))
