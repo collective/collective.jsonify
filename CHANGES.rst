@@ -4,7 +4,8 @@ Changelog
 1.4 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Try Subject and Contributors when subject and contributors give nothing.
+  [maurits]
 
 
 1.3 (2017-12-21)
