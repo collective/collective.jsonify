@@ -310,8 +310,8 @@ class Wrapper(dict):
                 value = self._get_at_field_value(field)
                 value2 = value
 
-                if not isinstance(value, str):
-                    if isinstance(value.data, str):
+                if value and not isinstance(value, str):
+                    if isinstance(getattr(value, 'data', None), str):
                         value = base64.b64encode(value.data)
                     else:
                         data = value.data

@@ -7,6 +7,9 @@ Changelog
 - Try Subject and Contributors when subject and contributors give nothing.
   [maurits]
 
+- Check if value exists on file like fields
+  [agitator]
+
 
 1.3 (2017-12-21)
 ----------------
