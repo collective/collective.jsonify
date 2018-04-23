@@ -744,6 +744,21 @@ class Wrapper(dict):
         else:
             self['modification_date'] = ''
 
+    def get_basic_dates(self):
+        """
+        """
+        if self._is_cmf_only_obj():
+            # then the dates are handled by get_zope_dublin_core,
+            # so we do nothing.
+            return
+        # datetime fields
+        for field in ['creation_date', 'modification_date']:
+            val = getattr(self.context.aq_base, field, False)
+            if val:
+                self[field] = str(val)
+            else:
+                self[field] = ''
+
     def get_zope_cmfcore_fields(self):
         """If CMFCore is used in an old Zope site, then dump the fields we know
         about.

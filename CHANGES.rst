@@ -10,6 +10,11 @@ Changelog
 - Check if value exists on file like fields
   [agitator]
 
+- Export creation_date and modification_date for all objects, not only _is_cmf_only_obj.
+  For dexterity these values are not present in a schemata, so they are not included as part
+  of the normal schemata based dexterity export.
+  [sunew]
+
 
 1.3 (2017-12-21)
 ----------------
