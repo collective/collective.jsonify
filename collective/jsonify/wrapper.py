@@ -745,7 +745,10 @@ class Wrapper(dict):
             self['modification_date'] = ''
 
     def get_basic_dates(self):
-        """
+        """ Dump creation and modification dates for items
+        that are not "cmf-only". For dexterity for instance, these
+        are not included in behaviors and so are not included in the
+        iteration over schematas and fields in get_dexterity_fields().
         """
         if self._is_cmf_only_obj():
             # then the dates are handled by get_zope_dublin_core,
