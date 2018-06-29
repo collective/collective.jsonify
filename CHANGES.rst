@@ -15,6 +15,10 @@ Changelog
   of the normal schemata based dexterity export.
   [sunew]
 
+- Use self.decode method to get stringified field value when wrapping content
+  for export.
+  [instification]
+
 
 1.3 (2017-12-21)
 ----------------
