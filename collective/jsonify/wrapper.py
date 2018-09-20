@@ -404,7 +404,7 @@ class Wrapper(dict):
                     value = field.getRaw(self.context)
                 except AttributeError:
                     value = self._get_at_field_value(field)
-                self[unicode(fieldname)] = unicode(value)
+                self[unicode(fieldname)] = self.decode(str(value))
 
     def get_references(self):
         """AT references.
