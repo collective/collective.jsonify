@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.4 (unreleased)
+1.4 (2018-09-20)
 ----------------
 
 - Try Subject and Contributors when subject and contributors give nothing.
