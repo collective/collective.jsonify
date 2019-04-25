@@ -26,6 +26,8 @@ class Wrapper(dict):
             self.portal_path = '/'.join(self.portal.getPhysicalPath())
             self.portal_utils = getToolByName(
                 self.context, 'plone_utils', None)
+            self.portal_workflow= getToolByName(
+                self.context, 'portal_workflow', None)
             try:
                 self.charset = self.portal.portal_properties.site_properties.default_charset  # noqa
             except AttributeError:
@@ -863,6 +865,14 @@ class Wrapper(dict):
         else:
             self['_zopeobject_document_src'] = ''
 
+    def get_review_state(self):
+
+        try:
+            review_state = self.portal_workflow.getInfoFor(self.context, 'review_state')
+        except Exception as e:
+            review_state = None
+
+        self['review_state'] = review_state
 
     def get_history(self):
         """ Export the history - metadata
