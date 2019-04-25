@@ -4,7 +4,10 @@ Changelog
 1.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- added new parameter `include_self` for include the root node of the export
+  within the export itself (needed for PloneFormGen to collective.easyform
+  migration)
+  [ajung]
 
 
 1.4 (2018-09-20)

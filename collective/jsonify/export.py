@@ -182,7 +182,8 @@ def export_content(self,
                    skip_callback=None,
                    batch_start=None,
                    batch_size=None,
-                   batch_previous_path=None):
+                   batch_previous_path=None,
+                   include_self=False):
     """Export the contents of a Plone site/context to JSON files.
 
     :param self: The folderish context, from where the export should start.
@@ -219,6 +220,9 @@ def export_content(self,
                                 jsonify each item in order to see, if it was
                                 included in previous batches.
     :type batch_previous_path: String
+
+    :param include_self: include the root node within the export
+    :type include_self: Bool
 
     :returns: A sucess/fail message with number of exported items.
     :rtype: String
@@ -262,7 +266,7 @@ def export_content(self,
     else:
         os.mkdir(TMPDIR)
 
-    write(walk(self, skip_callback=skip_callback))
+    write(walk(self, skip_callback=skip_callback, include_self=include_self))
 
     count_sub = 0
     if BATCH_START is not None:
@@ -319,7 +323,7 @@ def walk(folder, skip_callback=lambda item: False):
             # but allow walking into subdirectories (below)
             yield item
         if getattr(item, 'objectIds', None) and item.objectIds():
-            for subitem in walk(item, skip_callback=skip_callback):
+            for subitem in walk(item, skip_callback=skip_callback, include_self=False):
                 yield subitem
 
 
@@ -333,7 +337,18 @@ def write(items):
         b_start = 1000, b_size = 1000, counter = 1001: writes
     """
 
-    for item in items:
+    if include_self:
+        item_ids = [None] + folder.objectIds()
+    else:
+        item_ids = folder.objectIds()
+
+    for item_id in item_ids:
+
+        if item_id:
+            item = folder[item_id]
+        else:
+            item  = folder
+
         if BATCH_START is not None\
                 and BATCH_SIZE is not None\
                 and COUNTER >= BATCH_START + BATCH_SIZE:
