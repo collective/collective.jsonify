@@ -47,4 +47,12 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=requirements,
+    extras_require={
+       'runhook': [
+            'collective.runhook',
+       ]},
+    entry_points="""
+    [collective.runhook]
+    jsonify = collective.jsonify.hook:jsonify
+    """
 )

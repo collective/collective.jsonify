@@ -261,6 +261,7 @@ def export_content(self,
         shutil.rmtree(TMPDIR)
     else:
         os.mkdir(TMPDIR)
+    logger.warn(">> Directory %s" % TMPDIR)
 
     write(walk(self, skip_callback=skip_callback))
 
