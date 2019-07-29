@@ -474,6 +474,10 @@ class Wrapper(dict):
             self['_type'] = self.context.portal_type
         except AttributeError:
             pass
+        try:
+            self['_meta_type'] = self.context.meta_type
+        except AttributeError:
+            pass
 
     def get_classname(self):
         """Classname of object.
