@@ -4,7 +4,8 @@ Changelog
 1.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Add collective.runhook compatible hook to export all Plone sites at the Zope root
+  [gotcha]
 
 
 1.4 (2018-09-20)
