@@ -20,7 +20,7 @@ def jsonify(context, request):
         if IPloneSiteRoot.providedBy(obj):
             setSite(obj)
             export_content(obj, **kwargs)
-            sites[obj.getId()] = export.TMPDIR
+            sites[obj.getId()] = os.path.basename(export.TMPDIR)
     if basedir:
         sites_filename = os.path.join(basedir, 'sites.json')
         with open(sites_filename, 'w') as sites_file:
