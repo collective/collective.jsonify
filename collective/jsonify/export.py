@@ -296,7 +296,7 @@ def walk(folder, skip_callback=lambda item: False):
 
     """
     for item_id in folder.objectIds():
-        item = folder[item_id]
+        item = folder.get(item_id)
 
         yield_item = True
         path = '/'.join(item.getPhysicalPath())
