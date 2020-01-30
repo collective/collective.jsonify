@@ -259,7 +259,10 @@ class Wrapper(dict):
                 try:
                     value = field.getRaw(self.context)
                 except AttributeError:
-                    value = self._get_at_field_value(field)
+                    try:
+                        value = self._get_at_field_value(field)
+                    except TypeError:
+                        value = ''
 
                 if callable(value):
                     value = value()
