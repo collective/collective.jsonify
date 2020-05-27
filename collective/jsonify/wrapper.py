@@ -9,6 +9,20 @@ try:
 except ImportError:
     HASPLONEUUID = False
 
+try:
+    try:    # This version doesn't consume as much memory
+        from binascii import b2a_base64
+        def _base64encode(data):
+            return b2a_base64(data)
+    except ImportError:
+        from base64 import b64encode
+        def _base64encode(data):
+            return b64encode(data)
+except ImportError:
+    # Legacy version of base64 (eg on Python 2.2)
+    from base64 import encodestring as b64encode
+    def _base64encode(data):
+        return b64encode(data)
 
 class Wrapper(dict):
     """Gets the data in a format that can be used by the transmogrifier
@@ -81,11 +95,10 @@ class Wrapper(dict):
         if data and len(data) > max_filesize:
             raise ValueError
 
-        import base64
         ctype = value.contentType
         size = value.getSize()
         dvalue = {
-            'data': base64.b64encode(data),
+            'data': _base64encode(data),
             'size': size,
             'filename': value.filename or '',
             'content_type': ctype,
@@ -216,8 +229,6 @@ class Wrapper(dict):
         except:
             IExtensionField = None
 
-        import base64
-
         fields = []
         for schemata in self.context.Schemata().values():
             fields.extend(schemata.fields())
@@ -315,14 +326,14 @@ class Wrapper(dict):
 
                 if value and not isinstance(value, str):
                     if isinstance(getattr(value, 'data', None), str):
-                        value = base64.b64encode(value.data)
+                        value = _base64encode(value.data)
                     else:
                         data = value.data
                         value = ''
                         while data is not None:
                             value += data.data
                             data = data.next
-                        value = base64.b64encode(value)
+                        value = _base64encode(value)
 
                 try:
                     max_filesize = int(
@@ -813,20 +824,16 @@ class Wrapper(dict):
             orig_value = value
 
             if not isinstance(value, str):
-                try:
-                    from base64 import b64encode
-                except:
-                    # Legacy version of base64 (eg on Python 2.2)
-                    from base64 import encodestring as b64encode
+
                 if isinstance(value.data, str):
-                    value = b64encode(value.data)
+                    value = _base64encode(value.data)
                 else:
                     data = value.data
                     value = ''
                     while data is not None:
                         value += data.data
                         data = data.next
-                    value = b64encode(value)
+                    value = _base64encode(value)
 
             try:
                 max_filesize = int(
