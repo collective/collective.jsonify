@@ -1,5 +1,12 @@
 from wrapper import Wrapper
-import base64
+try:
+    import binascii
+    def _base64decode(s):
+        return binascii.a2b_base64(s)
+except:
+    import base64
+    def _base64decode(s):
+        return base64.b64decode(s)
 import pprint
 import sys
 import traceback
@@ -80,7 +87,7 @@ def get_catalog_results(self):
         return
     query = self.REQUEST.form.get('catalog_query', None)
     if query:
-        query = eval(base64.b64decode(query),
+        query = eval(_base64decode(query),
                      {"__builtins__": None}, {})
     item_paths = [item.getPath() for item
                   in self.unrestrictedSearchResults(**query)]
