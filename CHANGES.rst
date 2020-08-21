@@ -4,7 +4,17 @@ Changelog
 1.5 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- Fixing Out of Memory by swapping base64 implementation.
+  [gogobd]
+
+- Fix acquisition when object in folder has attribute name.
+  [maartenkling]
+
+- Fallback for TypeError when _get_at_field_value is broken computedfield.
+  [maartenkling]
+
+- Add runhook support.
+  [gotcha]
 
 
 1.4 (2018-09-20)
