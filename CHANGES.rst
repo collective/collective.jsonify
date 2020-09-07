@@ -4,7 +4,10 @@ Changelog
 1.6 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- added portlet export [ajung]
+- added portlet blacklist export [ajung]
+- added review state export [ajung]
+- code cleanup using autopep8 [ajung]
 
 
 1.5 (2020-08-21)
