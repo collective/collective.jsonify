@@ -917,3 +917,88 @@ class Wrapper(dict):
                 self['_old_paths'] = [r[len(self.portal_path):] for r in redirects]
         except:  # noqa: E722
             pass
+    def get_portlets(self):
+        """ Get portlet assignments """
+
+        from plone.portlets.interfaces import IPortletManager
+        from plone.portlets.interfaces import IPortletAssignment
+        from plone.portlets.interfaces import IPortletAssignmentMapping
+        from plone.portlets.interfaces import ILocalPortletAssignmentManager
+
+        result = {}
+        blacklist_status = {}
+
+        for name in (u'plone.leftcolumn', u'plone.rightcolumn'):
+            manager = getUtility(IPortletManager, name=name, context=self.context)
+
+            try:
+                assignment_mapping = getMultiAdapter( (self.context, manager), IPortletAssignmentMapping)
+            except Exception as e:
+                print e
+                continue
+
+            assignment_manager = getMultiAdapter((self.context, manager), ILocalPortletAssignmentManager)
+            blacklist_status[name] = assignment_manager.getBlacklistStatus(CONTEXT_CATEGORY)
+
+            for id, assignment in assignment_mapping.items():
+                if not name in result:
+                    result[name] = list()
+
+                a_data = dict()
+                print >>sys.stderr, assignment  # unghost assignment? DON'T REMOVE
+                for k in assignment.__dict__.keys():
+                    if k in ['__parent__', '__annotations__']:
+                        continue
+                    v = assignment.__dict__[k]
+                    if isinstance(v, RelationValue):
+                        try:
+                            a_data[k] = v.to_path
+                        except:
+                            continue
+
+                        try:
+                            a_data[k + '_uid'] = v.to_object.UUID()
+                        except AttributeError:
+                            try:
+                                a_data[k + '_uid'] = v.to_object.UID()
+                            except AttributeError:
+                                continue
+
+                    elif isinstance(v, (list, tuple)):
+
+                        list_items = list()
+                        # list of RelationValue instances?
+
+                        if len(v) > 0 and isinstance(v[0], RelationValue):
+                            for list_item in v:
+                                try:
+                                    list_item_path = list_item.to_path
+                                except:
+                                    continue
+
+                                if list_item.to_object is not None:
+                                    try:
+                                        list_item_uid = list_item.to_object.UUID()
+                                    except AttributeError:
+                                        list_item_uid = list_item.to_object.UID()
+
+                                    list_items.append(dict(uid=list_item_uid, path=list_item_path))
+
+                        else:
+                            list_items = v
+
+                        a_data[k] = list_items
+
+                    else:
+                        a_data[k] = v
+
+
+                result[name].append(dict(
+                    id=id,
+                    klass=assignment.__class__.__name__,
+                    name=str(assignment),
+                    data=a_data))
+        self['_portlets'] = result
+        self['_portlets_blacklist'] = blacklist_status
+
+
