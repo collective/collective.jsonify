@@ -872,6 +872,14 @@ class Wrapper(dict):
             self['document_src'] = self.decode(document_src())
         else:
             self['_zopeobject_document_src'] = ''
+    def get_review_state(self):
+
+        try:
+            review_state = self.portal_workflow.getInfoFor(self.context, 'review_state')
+        except Exception as e:
+            review_state = None
+
+        self['review_state'] = review_state
 
 
     def get_history(self):
