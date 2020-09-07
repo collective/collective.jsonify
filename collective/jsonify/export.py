@@ -22,7 +22,7 @@ COUNTER = 1
 BATCH_START = None
 BATCH_SIZE = None
 BATCH_PREVIOUS_PATH = None
-HOMEDIR = '/tmp'
+HOMEDIR = os.environ.get('EXPORT_DIR', '/tmp')
 TMPDIR = HOMEDIR
 CLASSNAME_TO_SKIP_LOUD = [
     'BrowserIdManager',
