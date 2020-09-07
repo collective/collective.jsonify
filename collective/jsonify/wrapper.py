@@ -12,17 +12,21 @@ except ImportError:
 try:
     try:    # This version doesn't consume as much memory
         from binascii import b2a_base64
+
         def _base64encode(data):
             return b2a_base64(data)
     except ImportError:
         from base64 import b64encode
+
         def _base64encode(data):
             return b64encode(data)
 except ImportError:
     # Legacy version of base64 (eg on Python 2.2)
     from base64 import encodestring as b64encode
+
     def _base64encode(data):
         return b64encode(data)
+
 
 class Wrapper(dict):
     """Gets the data in a format that can be used by the transmogrifier
@@ -673,11 +677,12 @@ class Wrapper(dict):
         self['_translations'] = {}
 
         for lang in translations:
-            trans_obj = '/'.join(translations[lang][0].getPhysicalPath())[len(self.portal_path):]
+            trans_obj = '/'.join(translations[lang]
+                                 [0].getPhysicalPath())[len(self.portal_path):]
             self['_translations'][lang] = trans_obj
 
         self['_translationOf'] = '/'.join(self.context.getCanonical(
-                                 ).getPhysicalPath())[len(self.portal_path):]
+        ).getPhysicalPath())[len(self.portal_path):]
         self['_canonicalTranslation'] = self.context.isCanonical()
 
     def _is_cmf_only_obj(self):
@@ -872,15 +877,16 @@ class Wrapper(dict):
             self['document_src'] = self.decode(document_src())
         else:
             self['_zopeobject_document_src'] = ''
+
     def get_review_state(self):
 
         try:
-            review_state = self.portal_workflow.getInfoFor(self.context, 'review_state')
+            review_state = self.portal_workflow.getInfoFor(
+                self.context, 'review_state')
         except Exception as e:
             review_state = None
 
         self['review_state'] = review_state
-
 
     def get_history(self):
         """ Export the history - metadata
@@ -888,7 +894,7 @@ class Wrapper(dict):
         try:
             repo_tool = getToolByName(self.context, "portal_repository")
             history_metadata = repo_tool.getHistoryMetadata(self.context)
-            if not(hasattr(history_metadata,'getLength')):
+            if not(hasattr(history_metadata, 'getLength')):
                 # No history metadata
                 return
 
@@ -897,12 +903,15 @@ class Wrapper(dict):
             for i in xrange(history_metadata.getLength(countPurged=False)-1, -1, -1):
                 data = history_metadata.retrieve(i, countPurged=False)
                 meta = data["metadata"]["sys_metadata"].copy()
-                version_id = history_metadata.getVersionId(i, countPurged=False)
+                version_id = history_metadata.getVersionId(
+                    i, countPurged=False)
                 try:
-                    dateaux = datetime.datetime.fromtimestamp(meta.get('timestamp',0))
-                    meta['timestamp'] = dateaux.strftime("%Y/%m/%d %H:%M:%S GMT")
+                    dateaux = datetime.datetime.fromtimestamp(
+                        meta.get('timestamp', 0))
+                    meta['timestamp'] = dateaux.strftime(
+                        "%Y/%m/%d %H:%M:%S GMT")
                 except Exception, ex:
-                    meta['timestamp']=''
+                    meta['timestamp'] = ''
                 history_list.append(meta)
             self['_history'] = history_list
 
@@ -919,12 +928,15 @@ class Wrapper(dict):
             from zope.component import getUtility
             from plone.app.redirector.interfaces import IRedirectionStorage
             storage = getUtility(IRedirectionStorage)
-            redirects = storage.redirects('/'.join(self.context.getPhysicalPath()))
+            redirects = storage.redirects(
+                '/'.join(self.context.getPhysicalPath()))
             if redirects:
                 # remove site name (e.g. "/Plone") from redirect paths
-                self['_old_paths'] = [r[len(self.portal_path):] for r in redirects]
+                self['_old_paths'] = [r[len(self.portal_path):]
+                                      for r in redirects]
         except:  # noqa: E722
             pass
+
     def get_portlets(self):
         """ Get portlet assignments """
 
@@ -937,16 +949,20 @@ class Wrapper(dict):
         blacklist_status = {}
 
         for name in (u'plone.leftcolumn', u'plone.rightcolumn'):
-            manager = getUtility(IPortletManager, name=name, context=self.context)
+            manager = getUtility(
+                IPortletManager, name=name, context=self.context)
 
             try:
-                assignment_mapping = getMultiAdapter( (self.context, manager), IPortletAssignmentMapping)
+                assignment_mapping = getMultiAdapter(
+                    (self.context, manager), IPortletAssignmentMapping)
             except Exception as e:
                 print e
                 continue
 
-            assignment_manager = getMultiAdapter((self.context, manager), ILocalPortletAssignmentManager)
-            blacklist_status[name] = assignment_manager.getBlacklistStatus(CONTEXT_CATEGORY)
+            assignment_manager = getMultiAdapter(
+                (self.context, manager), ILocalPortletAssignmentManager)
+            blacklist_status[name] = assignment_manager.getBlacklistStatus(
+                CONTEXT_CATEGORY)
 
             for id, assignment in assignment_mapping.items():
                 if not name in result:
@@ -990,7 +1006,8 @@ class Wrapper(dict):
                                     except AttributeError:
                                         list_item_uid = list_item.to_object.UID()
 
-                                    list_items.append(dict(uid=list_item_uid, path=list_item_path))
+                                    list_items.append(
+                                        dict(uid=list_item_uid, path=list_item_path))
 
                         else:
                             list_items = v
@@ -1000,7 +1017,6 @@ class Wrapper(dict):
                     else:
                         a_data[k] = v
 
-
                 result[name].append(dict(
                     id=id,
                     klass=assignment.__class__.__name__,
@@ -1008,5 +1024,3 @@ class Wrapper(dict):
                     data=a_data))
         self['_portlets'] = result
         self['_portlets_blacklist'] = blacklist_status
-
-

@@ -1,10 +1,12 @@
 from wrapper import Wrapper
 try:
     import binascii
+
     def _base64decode(s):
         return binascii.a2b_base64(s)
 except:
     import base64
+
     def _base64decode(s):
         return base64.b64decode(s)
 import pprint
