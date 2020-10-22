@@ -1,6 +1,7 @@
 from Acquisition import aq_base
 from DateTime import DateTime
 from Products.CMFCore.utils import getToolByName
+from plone.portlets.constants import CONTEXT_CATEGORY
 import datetime
 import os
 try:
@@ -940,6 +941,8 @@ class Wrapper(dict):
     def get_portlets(self):
         """ Get portlet assignments """
 
+        from zope.component import getUtility
+        from zope.component import getMultiAdapter
         from plone.portlets.interfaces import IPortletManager
         from plone.portlets.interfaces import IPortletAssignment
         from plone.portlets.interfaces import IPortletAssignmentMapping
