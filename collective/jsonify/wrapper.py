@@ -579,6 +579,12 @@ class Wrapper(dict):
                 if key is not None:
                     self['_ac_local_roles'][key] = val
 
+    def get_block_local_roles(self):
+        """Block inheritance of local roles
+        :keys: _ac_local_roles_block
+        """
+        self['_ac_local_roles_block'] = getattr(self._context, '__ac_local_roles_block__', False)
+
     def get_userdefined_roles(self):
         """User defined roles for object (via sharing UI)
         :keys: _userdefined_roles
