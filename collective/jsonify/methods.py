@@ -1,4 +1,8 @@
-from wrapper import Wrapper
+try:
+    from wrapper import Wrapper
+except ImportError:
+    from .wrapper import Wrapper
+
 try:
     import binascii
 
@@ -37,7 +41,7 @@ def get_item(self):
 
     try:
         context_dict = Wrapper(self)
-    except Exception, e:
+    except Exception as e:
         etype = sys.exc_info()[0]
         tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
         return 'ERROR: exception wrapping object: %s: %s\n%s' % (
@@ -49,7 +53,7 @@ def get_item(self):
         try:
             JSON = json.dumps(context_dict)
             passed = True
-        except Exception, error:
+        except Exception as error:
             if "serializable" in str(error):
                 key, context_dict = _clean_dict(context_dict, error)
                 pprint.pprint(

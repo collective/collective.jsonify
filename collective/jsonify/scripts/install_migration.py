@@ -2,6 +2,7 @@
 # Needed for Plone 4.3 -> Plone 5.2 migration through JSON export.
 
 import transaction
+import collective.jsonify.methods
 
 manage_addProduct = app.manage_addProduct
 

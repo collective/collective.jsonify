@@ -262,7 +262,6 @@ def export_content(self,
     else:
         os.mkdir(TMPDIR)
     logger.warn(">> Directory %s" % TMPDIR)
-
     write(walk(self, skip_callback=skip_callback))
 
     count_sub = 0
@@ -361,7 +360,7 @@ def write(items):
 
         try:
             context_dict = Wrapper(item)
-        except Exception, e:
+        except Exception as e:
             # tb = pprint.pformat(traceback.format_tb(sys.exc_info()[2]))
             # msg = 'ERROR: exception wrapping object: %s\n%s' % (str(e), tb)
             logger.warn('exception wrapping object %s. Error: %s' % (ppath, e))
@@ -373,7 +372,7 @@ def write(items):
                 # see, if we can serialize to json
                 json_structure = json.dumps(context_dict)  # noqa
                 passed = True
-            except Exception, error:
+            except Exception as error:
                 if "serializable" in str(error):
                     # Good place to inspect errors:
                     ## from ipdb import set_trace; set_trace()

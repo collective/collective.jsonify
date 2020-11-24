@@ -293,7 +293,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         value = unicode(value)
-                    except Exception, e:
+                    except Exception as e:
                         raise Exception('problems with %s: %s' % (
                             self.context.absolute_url(), str(e))
                         )
@@ -359,7 +359,7 @@ class Wrapper(dict):
                     except AttributeError:
                         # maybe an int?
                         fname = unicode(fname)
-                    except Exception, e:
+                    except Exception as e:
                         raise Exception(
                             'problems with %s: %s' % (
                                 self.context.absolute_url(), str(e)
@@ -863,7 +863,7 @@ class Wrapper(dict):
                 except AttributeError:
                     # maybe an int?
                     fname = unicode(fname)
-                except Exception, e:
+                except Exception as e:
                     raise Exception('problems with %s: %s' %
                                     (self.context.absolute_url(), str(e)))
 
@@ -917,7 +917,7 @@ class Wrapper(dict):
                         meta.get('timestamp', 0))
                     meta['timestamp'] = dateaux.strftime(
                         "%Y/%m/%d %H:%M:%S GMT")
-                except Exception, ex:
+                except Exception as ex:
                     meta['timestamp'] = ''
                 history_list.append(meta)
             self['_history'] = history_list
@@ -965,7 +965,7 @@ class Wrapper(dict):
                 assignment_mapping = getMultiAdapter(
                     (self.context, manager), IPortletAssignmentMapping)
             except Exception as e:
-                print e
+                print(e)
                 continue
 
             assignment_manager = getMultiAdapter(
@@ -978,7 +978,7 @@ class Wrapper(dict):
                     result[name] = list()
 
                 a_data = dict()
-                print >>sys.stderr, assignment  # unghost assignment? DON'T REMOVE
+                print(assignment)  # unghost assignment? DON'T REMOVE
                 for k in assignment.__dict__.keys():
                     if k in ['__parent__', '__annotations__']:
                         continue

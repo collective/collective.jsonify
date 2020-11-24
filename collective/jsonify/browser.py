@@ -122,5 +122,5 @@ class JsonifyView(BrowserView):
             JSON = json.dumps(objs)
             self.request.response.setHeader("Content-type", "application/json")
             return JSON
-        except Exception, e:
+        except Exception as e:
             return 'ERROR: wrapped object is not serializable: %s' % str(e)
