@@ -174,6 +174,17 @@ PATHS_TO_SKIP = [
 ]
 
 
+from ZPublisher.HTTPRequest import record
+
+class MyJSONEncoder(json.JSONEncoder):
+
+
+    def default(self, obj):
+        if isinstance(obj, record):
+            return dict(obj)
+        return json.JSONEncoder.default(self, obj)
+
+
 def export_content(self,
                    basedir=HOMEDIR,
                    extra_skip_id=[],
@@ -262,6 +273,7 @@ def export_content(self,
     else:
         os.mkdir(TMPDIR)
     logger.warn(">> Directory %s" % TMPDIR)
+    print(">> Directory %s" % TMPDIR)
     write(walk(self, skip_callback=skip_callback))
 
     count_sub = 0
@@ -294,6 +306,8 @@ def walk(folder, skip_callback=lambda item: False):
     :rtype: Plone context.
 
     """
+    print(folder)
+
     for item_id in folder.objectIds():
         item = folder.get(item_id)
 
@@ -370,12 +384,13 @@ def write(items):
         while not passed:
             try:
                 # see, if we can serialize to json
-                json_structure = json.dumps(context_dict)  # noqa
+                json_structure = json.dumps(context_dict, cls=MyJSONEncoder)  # noqa
                 passed = True
             except Exception as error:
                 if "serializable" in str(error):
                     # Good place to inspect errors:
                     ## from ipdb import set_trace; set_trace()
+                    import pdb; pdb.set_trace()
                     key, context_dict = _clean_dict(context_dict, error)
                     logger.warn(
                         'Not serializable member %s of %s ignored. (%s)' % (
@@ -420,5 +435,5 @@ def write_to_jsonfile(item):
         os.mkdir(SUB_TMPDIR)
 
     f = open(os.path.join(SUB_TMPDIR, str(COUNTER) + '.json'), 'wb')
-    json.dump(item, f, indent=4)
+    json.dump(item, f, indent=4, cls=MyJSONEncoder)
     f.close()

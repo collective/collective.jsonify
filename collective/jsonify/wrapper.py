@@ -1,4 +1,6 @@
 from Acquisition import aq_base
+from z3c.relationfield import RelationValue
+
 from DateTime import DateTime
 from Products.CMFCore.utils import getToolByName
 from plone.portlets.constants import CONTEXT_CATEGORY

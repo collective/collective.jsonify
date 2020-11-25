@@ -17,6 +17,8 @@ import pprint
 import sys
 import traceback
 
+from ZPublisher.HTTPRequest import record
+
 try:
     import simplejson as json
 except:
