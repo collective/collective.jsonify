@@ -78,13 +78,15 @@ string. Here's an example of doing this with curl::
 Using the exporter
 ==================
 
-Instead of doing on-the-fly exporting with collective.jsonmigrator, you can
-also export your site's content to json files for multiple re-use. This is done
-by the export script and the external method, as described above. You can also
-batch-export the contents, if you get out of memory on your exporting machine.
-Here is an example on how to configure the export script for using as an 
-external method::
+To export your site to a directory of JSON files use the ``collective.jsonify.export.export_content`` function.
 
+This is how to use it with an external method:
+
+- Install ``collective.jsonify`` for your instance.
+
+- Create a script in your Zope instance ``Extensions`` directory, e.g. in ``BUILDOUT_ROOT/parts/instance/Extensions``.
+  Create the ``Extensions`` directory, if it doesn't exist.
+  Create a file ``export_content.py`` with the following contents - adpat for your needs::
     from collective.jsonify.export import export_content as export_content_orig
 
 
@@ -93,13 +95,19 @@ external method::
             self,
             basedir='/tmp',  # export directory
             extra_skip_classname=['ATTopic'],
-            batch_start=5000,
-            batch_size=5000,
-            batch_previous_path='/Plone/last/exported/path'  # optional, but saves more memory because no item has to be jsonified before continuing...
+            # batch_start=5000,
+            # batch_size=5000,
+            # batch_previous_path='/Plone/last/exported/path'  # optional, but saves more memory because no item has to be jsonified before continuing...
         )
 
-To start the export, just open the url in your browser::
-    
+- Create the "External Method" in the ZMI at the Zope root or Plone root.
+  id: "export_content"
+  module name: "export_content"
+  function name: "export_content"
+
+   For more info on "External Methods" see: https://zope.readthedocs.io/en/latest/zopebook/ScriptingZope.html#using-external-methods
+
+- To start the export, open the url in your browser::
     http://localhost:8080/Plone/export_content
 
 
