@@ -6,6 +6,7 @@ Changelog
 
 - Fix "AttributeError: get" that occurred with collective.jsonify 1.5 on Plone 2.1,
   by using objectValues() to list items contained in a folder.
+  [rpijlman]
 
 1.5 (2020-08-21)
 ----------------
