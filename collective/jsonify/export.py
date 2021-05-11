@@ -295,9 +295,7 @@ def walk(folder, skip_callback=lambda item: False):
     :rtype: Plone context.
 
     """
-    for item_id in folder.objectIds():
-        item = folder.get(item_id)
-
+    for item in folder.objectValues():
         yield_item = True
         path = '/'.join(item.getPhysicalPath())
         if filter(lambda x: x in path, PATHS_TO_SKIP):
