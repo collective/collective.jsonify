@@ -10,7 +10,7 @@ options include:
 2. Use ``easy_install collective.jsonify`` or ``pip install collective.jsonify`` which
    will also pull ``simplejson``.
 
-*Note: if you are working with python 2.2, then you will need to install a `tweaked 
+*Note: if you are working with python 2.2, then you will need to install a `tweaked
 branch of simplejson <https://github.com/simplejson/simplejson/tree/python2.2>`_.*
 
 
@@ -86,7 +86,8 @@ This is how to use it with an external method:
 
 - Create a script in your Zope instance ``Extensions`` directory, e.g. in ``BUILDOUT_ROOT/parts/instance/Extensions``.
   Create the ``Extensions`` directory, if it doesn't exist.
-  Create a file ``export_content.py`` with the following contents - adpat for your needs::
+  Create a file ``json_methods.py`` with the following contents - adapt for your needs::
+
     from collective.jsonify.export import export_content as export_content_orig
 
 
@@ -102,7 +103,7 @@ This is how to use it with an external method:
 
 - Create the "External Method" in the ZMI at the Zope root or Plone root.
   id: "export_content"
-  module name: "export_content"
+  module name: "json_methods"
   function name: "export_content"
 
    For more info on "External Methods" see: https://zope.readthedocs.io/en/latest/zopebook/ScriptingZope.html#using-external-methods
