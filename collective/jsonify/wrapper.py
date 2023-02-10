@@ -1,4 +1,5 @@
 from Acquisition import aq_base
+from Acquisition import aq_get
 from DateTime import DateTime
 from Products.CMFCore.utils import getToolByName
 import datetime
@@ -917,3 +918,21 @@ class Wrapper(dict):
                 self['_old_paths'] = [r[len(self.portal_path):] for r in redirects]
         except:  # noqa: E722
             pass
+
+    def get_zzz_additional_wrappers(self):
+        """Last step: Call additional methods found via Acquisition,
+        e.g. External Methods.
+        Call using <URL>?additional_wrappers=extend_item
+        For more wrappers use <URL>?additional_wrappers=foo&additional_wrappers=bar
+        The hooks take the obj and context_dict as parameters.
+        """
+        additional = self.context.REQUEST.form.get('additional_wrappers', [])
+        if not isinstance(additional, list):
+            additional = [additional]
+        for name in additional:
+            hook = aq_get(self.context, name, None)
+            if hook is not None:
+                try:
+                    self = hook(self.context, self)
+                except:  # noqa: E722
+                    pass

@@ -117,12 +117,87 @@ How to extend it
 
 We try to cover the basic Plone types to export useful content out of Plone. We
 cannot predict all usecases, but if you have custom requirements it's easy to
-extend functionality. You have a few options:
+extend functionality.
 
- - You can pass additional wrappers to the ``get_item`` External Method. Of course you
-   have to have these wrappers in your PYTHONPATH::
+To control what to export before serialzing is the fastest way to extend..
+You can override the ``export_content`` "External Methods" as described above.
 
-        http://localhost:8080/Plone/front-page/get_item?additional_wrappers=myproject.wrapper1.Wrapper;myproject.wrapper2.Wrapper
+Example::
 
- - If you need something completely custom, you could override the ``get_item``
-   and ``get_children`` External Methods.
+    from collective.jsonify.export import export_content as export_content_orig
+
+    EXPORTED_TYPES = [
+        "Folder",
+        "Document",
+        "News Item",
+        "Event",
+        "Link",
+        "Topic",
+        "File",
+        "Image",
+        "RichTopic",
+    ]
+
+    EXTRA_SKIP_PATHS = [
+        "/Plone/archiv/",
+        "/Plone/do-not-import/",
+    ]
+
+    # Path from which to continue the export.
+    # The export walks the whole site respecting the order.
+    # It will ignore everything untill this path is reached.
+    PREVIOUS = ""
+
+    def export_content(self):
+        return export_content_orig(
+            self,
+            basedir="/var/lib/zope/json",
+            skip_callback=skip_item,
+            extra_skip_classname=[],
+            extra_skip_id=[],
+            extra_skip_paths=EXTRA_SKIP_PATHS,
+            batch_start=0,
+            batch_size=10000,
+            batch_previous_path=PREVIOUS or None,
+        )
+
+    def skip_item(item):
+        """Return True if the item should be skipped"""
+        portal_type = getattr(item, "portal_type", None)
+        if portal_type not in EXPORTED_TYPES:
+            return True
+
+
+You can modify or extend the exported data by passing additional wrappers to ``get_item`` or ``export_content``.
+These should to be "External Methods"::
+
+    http://localhost:8080/Plone/front-page/get_item?additional_wrappers=extend_item
+
+These hooks take the object and the serialized data as arguments.
+
+Example::
+
+    def extend_item(obj, item):
+        """Extend to work better well with collective.exportimport"""
+        from Acquisition import aq_parent
+
+        # Info about parent
+        parent = aq_parent(obj)
+        item["parent"] = {
+            "@id": parent.absolute_url(),
+            "@type": getattr(parent, "portal_type", None),
+        }
+        if getattr(parent.aq_base, "UID", None) is not None:
+            item["parent"]["UID"] = parent.UID()
+
+        # Review state
+        try:
+            review_state = obj.portal_workflow.getInfoFor(obj, "review_state")
+        except Exception, e:
+            review_state = None
+        item["review_state"] = review_state
+
+        # Block inheritance of local roles
+        item["_ac_local_roles_block"] = getattr(obj.aq_base, "__ac_local_roles_block__", False)
+
+        return item
