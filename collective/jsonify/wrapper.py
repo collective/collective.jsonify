@@ -310,9 +310,9 @@ class Wrapper(dict):
                         pass
 
             elif type_ in ['DateTimeField', ]:
-                value = str(self._get_at_field_value(field))
+                value = self._get_at_field_value(field)
                 if value:
-                    self[unicode(fieldname)] = value
+                    self[unicode(fieldname)] = str(value)
 
             elif type_ in [
                 'ImageField',
