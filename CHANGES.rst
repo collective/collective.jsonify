@@ -4,7 +4,8 @@ Changelog
 1.7 (unreleased)
 ----------------
 
-- Nothing changed yet.
+- No longer point to outdated docs on readthedocs.
+  [pbauer]
 
 
 1.6 (2023-02-10)
