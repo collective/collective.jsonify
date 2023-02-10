@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.6 (unreleased)
+1.6 (2023-02-10)
 ----------------
 
 - Fix "AttributeError: get" that occurred with collective.jsonify 1.5 on Plone 2.1,
