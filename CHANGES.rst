@@ -8,6 +8,9 @@ Changelog
   by using objectValues() to list items contained in a folder.
   [rpijlman]
 
+- Add additional_wrappers to hook into export as promised by the documentation.
+  [pbauer]
+
 1.5 (2020-08-21)
 ----------------
 
