@@ -11,6 +11,10 @@ Changelog
 - Add additional_wrappers to hook into export as promised by the documentation.
   [pbauer]
 
+- Do not export None in a DateTimeField as the string "None".
+  [pbauer]
+
+
 1.5 (2020-08-21)
 ----------------
 
